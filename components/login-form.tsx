@@ -40,6 +40,7 @@ export function LoginForm({
       if (error) throw error;
       // Redirect to the real Physio Dynamics clinic dashboard
       router.push("/dashboard");
+      router.refresh();
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
