@@ -3,11 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Save,
-} from "lucide-react";
-
+import { ArrowLeft, Save, ClipboardList, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function NewProtocolPage({
@@ -20,18 +16,15 @@ export default function NewProtocolPage({
 
   const supabase = createClient();
 
-  const [condition, setCondition] =
-    useState<any>(null);
-
-  const [saving, setSaving] =
-    useState(false);
+  const [condition, setCondition] = useState<any>(null);
+  const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
-    name: "",
+    title: "",
     description: "",
+    duration_weeks: "4",
+    frequency_per_week: "3",
     goals: "",
-    treatment_options: "",
-    progression_notes: "",
     precautions: "",
   });
 
@@ -40,18 +33,17 @@ export default function NewProtocolPage({
   }, [conditionId]);
 
   async function loadCondition() {
-    const { data, error } =
-      await supabase
-        .from("conditions")
-        .select(`
-          id,
-          name,
-          physiotherapy_type:physiotherapy_types (
-            name
-          )
-        `)
-        .eq("id", conditionId)
-        .single();
+    const { data, error } = await supabase
+      .from("conditions")
+      .select(`
+        id,
+        name,
+        physiotherapy_type:physiotherapy_types (
+          name
+        )
+      `)
+      .eq("id", conditionId)
+      .single();
 
     if (error) {
       console.error(error);
@@ -61,51 +53,30 @@ export default function NewProtocolPage({
     setCondition(data);
   }
 
-  function updateField(
-    field: keyof typeof form,
-    value: string
-  ) {
+  function updateField(field: keyof typeof form, value: string) {
     setForm((current) => ({
       ...current,
       [field]: value,
     }));
   }
 
-  async function handleSubmit(
-    e: React.FormEvent
-  ) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!form.name.trim()) {
-      alert("Enter protocol name.");
+    if (!form.title.trim()) {
+      alert("Please enter protocol title.");
       return;
     }
 
     setSaving(true);
 
-    const { error } =
-      await supabase
-        .from("treatment_protocols")
-        .insert({
-          condition_id: conditionId,
-
-          name: form.name.trim(),
-
-          description:
-            form.description || null,
-
-          goals:
-            form.goals || null,
-
-          treatment_options:
-            form.treatment_options || null,
-
-          progression_notes:
-            form.progression_notes || null,
-
-          precautions:
-            form.precautions || null,
-        });
+    const { error } = await supabase.from("treatment_protocols").insert({
+      condition_id: conditionId,
+      title: form.title.trim(),
+      description: form.description || form.goals || null,
+      duration_weeks: form.duration_weeks ? Number(form.duration_weeks) : 4,
+      frequency_per_week: form.frequency_per_week ? Number(form.frequency_per_week) : 3,
+    });
 
     if (error) {
       console.error(error);
@@ -114,148 +85,113 @@ export default function NewProtocolPage({
       return;
     }
 
-    router.push(
-      `/dashboard/clinical-library/${conditionId}`
-    );
-
+    router.push(`/dashboard/clinical-library/${conditionId}`);
     router.refresh();
   }
 
   if (!condition) {
     return (
-      <div className="p-6 text-sm text-slate-500">
-        Loading...
+      <div className="p-8 text-center text-xs font-medium text-slate-400">
+        Loading condition details...
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <Link
-        href={`/dashboard/clinical-library/${conditionId}`}
-        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900"
-      >
-        <ArrowLeft size={16} />
-        Back to Condition
-      </Link>
-
-      <div className="mt-5">
-        <p className="text-sm text-slate-500">
-          {condition.physiotherapy_type?.name}
-        </p>
-
-        <h1 className="mt-1 text-2xl font-semibold text-slate-900">
-          Add Treatment Protocol
-        </h1>
-
-        <p className="mt-1 text-sm text-slate-500">
-          {condition.name}
-        </p>
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="mt-6 max-w-4xl space-y-6"
-      >
-        <section className="rounded-xl border bg-white p-6">
-          <h2 className="font-semibold text-slate-900">
-            Protocol Information
-          </h2>
-
-          <div className="mt-5 space-y-4">
-            <Input
-              label="Protocol Name *"
-              placeholder="e.g. Conservative Rehabilitation"
-              value={form.name}
-              onChange={(value) =>
-                updateField("name", value)
-              }
-            />
-
-            <Textarea
-              label="Description"
-              placeholder="Brief description of this protocol..."
-              value={form.description}
-              onChange={(value) =>
-                updateField(
-                  "description",
-                  value
-                )
-              }
-            />
-
-            <Textarea
-              label="Goals"
-              placeholder="Rehabilitation goals..."
-              value={form.goals}
-              onChange={(value) =>
-                updateField(
-                  "goals",
-                  value
-                )
-              }
-            />
-          </div>
-        </section>
-
-        <section className="rounded-xl border bg-white p-6">
-          <h2 className="font-semibold text-slate-900">
-            Treatment
-          </h2>
-
-          <div className="mt-5 space-y-4">
-            <Textarea
-              label="Treatment Options"
-              placeholder="Treatment approaches that may be considered..."
-              value={form.treatment_options}
-              onChange={(value) =>
-                updateField(
-                  "treatment_options",
-                  value
-                )
-              }
-            />
-
-            <Textarea
-              label="Progression"
-              placeholder="Progression considerations..."
-              value={form.progression_notes}
-              onChange={(value) =>
-                updateField(
-                  "progression_notes",
-                  value
-                )
-              }
-            />
-
-            <Textarea
-              label="Precautions"
-              placeholder="Protocol-specific precautions..."
-              value={form.precautions}
-              onChange={(value) =>
-                updateField(
-                  "precautions",
-                  value
-                )
-              }
-            />
-          </div>
-        </section>
-
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={saving}
-            className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-6 py-3 text-sm font-medium text-white disabled:opacity-50 hover:bg-slate-800"
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="mx-auto w-full max-w-3xl space-y-6">
+        {/* Header */}
+        <div>
+          <Link
+            href={`/dashboard/clinical-library/${conditionId}`}
+            className="inline-flex items-center gap-2 text-xs font-bold text-[#0692ab] hover:text-[#056b7d] transition-colors"
           >
-            <Save size={17} />
+            <ArrowLeft size={16} />
+            Back to Condition Dossier
+          </Link>
 
-            {saving
-              ? "Saving..."
-              : "Save Protocol"}
-          </button>
+          <div className="mt-3 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#e6f9fb] to-[#f4fbfd] text-[#0692ab] ring-1 ring-[#01d0d8]/30">
+              <ClipboardList size={24} />
+            </div>
+
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#056b7d]">
+                Add Treatment Protocol
+              </h1>
+
+              <p className="mt-0.5 text-xs sm:text-sm text-slate-500 font-medium">
+                {condition.name} • {condition.physiotherapy_type?.name}
+              </p>
+            </div>
+          </div>
         </div>
-      </form>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <section className="rounded-3xl border border-[#d2eff2] bg-white p-6 shadow-sm space-y-4">
+            <h2 className="text-base font-bold text-[#056b7d] border-b border-[#e6f9fb] pb-3">
+              Protocol Information
+            </h2>
+
+            <Input
+              label="Protocol Title *"
+              placeholder="e.g. Acute Phase Rehabilitation Protocol"
+              value={form.title}
+              onChange={(value) => updateField("title", value)}
+            />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input
+                label="Duration (Weeks)"
+                type="number"
+                value={form.duration_weeks}
+                onChange={(value) => updateField("duration_weeks", value)}
+              />
+
+              <Input
+                label="Frequency (Sessions / Week)"
+                type="number"
+                value={form.frequency_per_week}
+                onChange={(value) => updateField("frequency_per_week", value)}
+              />
+            </div>
+
+            <Textarea
+              label="Protocol Overview &amp; Instructions"
+              placeholder="Treatment goals, stages, and modality guidelines..."
+              value={form.description}
+              onChange={(value) => updateField("description", value)}
+            />
+          </section>
+
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <Link
+              href={`/dashboard/clinical-library/${conditionId}`}
+              className="rounded-2xl border border-[#d2eff2] bg-white px-5 py-3 text-sm font-bold text-slate-600 hover:bg-[#f4fbfd] transition-colors"
+            >
+              Cancel
+            </Link>
+
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#0692ab] to-[#01d0d8] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#01d0d8]/25 transition-all hover:from-[#056b7d] hover:to-[#0692ab] hover:shadow-xl disabled:opacity-50"
+            >
+              {saving ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Saving Protocol...
+                </>
+              ) : (
+                <>
+                  <Save size={18} />
+                  Save Treatment Protocol
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
@@ -264,26 +200,27 @@ function Input({
   label,
   value,
   onChange,
-  placeholder,
+  type = "text",
+  placeholder = "",
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  type?: string;
   placeholder?: string;
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-medium text-slate-700">
+      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#056b7d]">
         {label}
       </span>
 
       <input
+        type={type}
         value={value}
         placeholder={placeholder}
-        onChange={(e) =>
-          onChange(e.target.value)
-        }
-        className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm"
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-xl border border-[#d2eff2] bg-[#f4fbfd]/40 px-4 py-3 text-base sm:text-sm font-medium text-[#11282e] outline-none transition-all focus:border-[#01d0d8] focus:bg-white focus:ring-4 focus:ring-[#01d0d8]/15"
       />
     </label>
   );
@@ -293,7 +230,7 @@ function Textarea({
   label,
   value,
   onChange,
-  placeholder,
+  placeholder = "",
 }: {
   label: string;
   value: string;
@@ -302,18 +239,16 @@ function Textarea({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-medium text-slate-700">
+      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#056b7d]">
         {label}
       </span>
 
       <textarea
-        rows={5}
+        rows={4}
         value={value}
         placeholder={placeholder}
-        onChange={(e) =>
-          onChange(e.target.value)
-        }
-        className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm"
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-xl border border-[#d2eff2] bg-[#f4fbfd]/40 px-4 py-3 text-base sm:text-sm font-medium text-[#11282e] outline-none transition-all placeholder:text-slate-400 focus:border-[#01d0d8] focus:bg-white focus:ring-4 focus:ring-[#01d0d8]/15"
       />
     </label>
   );
