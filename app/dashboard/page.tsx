@@ -8,6 +8,10 @@ import {
   Smartphone,
   ArrowRight,
   Clock,
+  Plus,
+  Stethoscope,
+  Receipt,
+  Sparkles,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
@@ -133,98 +137,136 @@ export default async function DashboardPage() {
   ).size;
 
   return (
-    <div className="p-4 sm:p-5 lg:p-6">
-      <div className="mx-auto w-full max-w-[1600px] space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-[#0692AB]">
-              Physio Dynamics
-            </p>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#16323A]">
-              Dashboard
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Clinic overview and today&apos;s activity.
-            </p>
-          </div>
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8">
+      <div className="mx-auto w-full max-w-[1600px] space-y-8">
+        {/* Hero Header Banner */}
+        <div className="relative overflow-hidden rounded-3xl border border-[#d2eff2] bg-gradient-to-br from-white via-[#f4fbfd] to-[#e6f9fb] p-6 sm:p-8 shadow-sm">
+          <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-gradient-to-br from-[#01d0d8]/15 to-[#0692ab]/10 blur-2xl pointer-events-none" />
 
-          <div className="rounded-xl border border-[#d9eef0] bg-white px-4 py-3 shadow-sm self-start sm:self-auto">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Today
-            </p>
-            <p className="mt-0.5 text-sm font-bold text-[#056B7D]">
-              {formatDate(today)}
-            </p>
-          </div>
-        </div>
+          <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#01d0d8]/30 bg-white/80 px-3 py-1 text-xs font-bold text-[#056b7d] shadow-sm backdrop-blur-sm">
+                <Sparkles size={14} className="text-[#01d0d8]" />
+                Physio Dynamics Clinic • Panamaram, Wayanad
+              </div>
 
-        {/* Statistics */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            title="Today's Patients"
-            value={String(todayPatients)}
-            icon={<Users size={19} />}
-          />
-          <StatCard
-            title="Appointments"
-            value={String(appointments?.length ?? 0)}
-            icon={<CalendarDays size={19} />}
-          />
-          <StatCard
-            title="Treatments"
-            value={String(treatments?.length ?? 0)}
-            icon={<Activity size={19} />}
-          />
-          <StatCard
-            title="New Patients"
-            value={String(newPatients ?? 0)}
-            icon={<Users size={19} />}
-          />
-        </div>
+              <h1 className="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#056b7d]">
+                Clinic Overview &amp; Today&apos;s Operations
+              </h1>
 
-        {/* Revenue */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <MoneyCard
-            title="Today's Revenue"
-            value={totalRevenue}
-            icon={<IndianRupee size={19} />}
-          />
-          <MoneyCard
-            title="Cash"
-            value={cashRevenue}
-            icon={<Banknote size={19} />}
-          />
-          <MoneyCard
-            title="UPI"
-            value={upiRevenue}
-            icon={<Smartphone size={19} />}
-          />
-        </div>
+              <p className="mt-1 text-sm text-slate-500 font-medium max-w-xl">
+                Manage patient appointments, treatment protocols, and Cash / UPI collections seamlessly.
+              </p>
+            </div>
 
-        {/* Content */}
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          {/* Appointments */}
-          <section className="overflow-hidden rounded-2xl border border-[#d9eef0] bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-[#edf5f6] px-5 py-4">
-              <div>
-                <h2 className="font-semibold text-[#16323A]">
-                  Today&apos;s Appointments
-                </h2>
-                <p className="mt-0.5 text-xs text-slate-400">
-                  Scheduled clinic visits
+            <div className="flex items-center gap-3">
+              <div className="rounded-2xl border border-[#01d0d8]/30 bg-white px-4 py-3 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#0692ab]">
+                  Date Today
+                </p>
+                <p className="mt-0.5 text-sm font-extrabold text-[#056b7d]">
+                  {formatDate(today)}
                 </p>
               </div>
+
+              <Link
+                href="/dashboard/patients/new"
+                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#0692ab] to-[#01d0d8] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-[#01d0d8]/25 transition-all hover:from-[#056b7d] hover:to-[#0692ab] hover:shadow-xl hover:-translate-y-0.5"
+              >
+                <Plus size={18} />
+                New Patient
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Statistics Grid */}
+        <div>
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-[#0692ab] mb-3 px-1">
+            Today&apos;s Metrics
+          </h2>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              title="Today's Patients"
+              value={String(todayPatients)}
+              subtitle="Active session patients"
+              icon={<Users size={20} />}
+            />
+            <StatCard
+              title="Appointments"
+              value={String(appointments?.length ?? 0)}
+              subtitle="Scheduled for today"
+              icon={<CalendarDays size={20} />}
+            />
+            <StatCard
+              title="Treatments"
+              value={String(treatments?.length ?? 0)}
+              subtitle="Recorded sessions"
+              icon={<Activity size={20} />}
+            />
+            <StatCard
+              title="New Patients"
+              value={String(newPatients ?? 0)}
+              subtitle="Registered today"
+              icon={<Users size={20} />}
+            />
+          </div>
+        </div>
+
+        {/* Revenue Collection Row */}
+        <div>
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-[#0692ab] mb-3 px-1">
+            Collection Overview (Cash &amp; UPI)
+          </h2>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <MoneyCard
+              title="Total Today's Revenue"
+              value={totalRevenue}
+              subtitle="All payment methods"
+              icon={<IndianRupee size={20} />}
+              highlight
+            />
+            <MoneyCard
+              title="Cash Collection"
+              value={cashRevenue}
+              subtitle="In-hand cash payments"
+              icon={<Banknote size={20} />}
+            />
+            <MoneyCard
+              title="UPI Collection"
+              value={upiRevenue}
+              subtitle="Digital UPI transfers"
+              icon={<Smartphone size={20} />}
+            />
+          </div>
+        </div>
+
+        {/* Dynamic Activity Panels */}
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          {/* Today's Appointments */}
+          <section className="overflow-hidden rounded-3xl border border-[#d2eff2] bg-white shadow-sm transition-all hover:shadow-md">
+            <div className="flex items-center justify-between border-b border-[#e6f9fb] bg-gradient-to-r from-white to-[#f4fbfd] px-6 py-4">
+              <div>
+                <h2 className="font-bold text-[#056b7d] text-base">
+                  Today&apos;s Appointments
+                </h2>
+                <p className="mt-0.5 text-xs font-medium text-slate-400">
+                  Scheduled patient visits
+                </p>
+              </div>
+
               <Link
                 href="/dashboard/appointments"
-                className="text-xs font-semibold text-[#0692AB] hover:text-[#056B7D]"
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#0692ab] hover:text-[#056b7d] transition-colors"
               >
-                View all →
+                View directory <ArrowRight size={14} />
               </Link>
             </div>
 
             {appointments && appointments.length > 0 ? (
-              <div className="divide-y divide-[#f4fcfd]">
+              <div className="divide-y divide-[#f4fbfd]">
                 {appointments.slice(0, 8).map((appointment) => {
                   const pat = appointment.patient as any;
                   const name = pat
@@ -234,19 +276,19 @@ export default async function DashboardPage() {
                   return (
                     <div
                       key={appointment.id}
-                      className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-[#f7fcfd] transition-colors"
+                      className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-[#f4fbfd]/70 transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#e9fbfc] text-[#0692AB]">
-                          <Clock size={17} />
+                      <div className="flex items-center gap-3.5">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#e6f9fb] to-[#f4fbfd] text-[#0692ab] ring-1 ring-[#01d0d8]/30">
+                          <Clock size={18} />
                         </div>
 
                         <div>
-                          <p className="text-sm font-medium text-[#16323A]">
+                          <p className="text-sm font-bold text-[#11282e]">
                             {name}
                           </p>
-                          <p className="mt-0.5 text-xs text-slate-400 font-mono">
-                            {appointment.appointment_date}
+                          <p className="mt-0.5 text-xs font-medium text-slate-400">
+                            {pat?.patient_code || "Scheduled Slot"}
                           </p>
                         </div>
                       </div>
@@ -261,22 +303,23 @@ export default async function DashboardPage() {
             )}
           </section>
 
-          {/* Treatments */}
-          <section className="overflow-hidden rounded-2xl border border-[#d9eef0] bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-[#edf5f6] px-5 py-4">
+          {/* Today's Treatment Sessions */}
+          <section className="overflow-hidden rounded-3xl border border-[#d2eff2] bg-white shadow-sm transition-all hover:shadow-md">
+            <div className="flex items-center justify-between border-b border-[#e6f9fb] bg-gradient-to-r from-white to-[#f4fbfd] px-6 py-4">
               <div>
-                <h2 className="font-semibold text-[#16323A]">
+                <h2 className="font-bold text-[#056b7d] text-base">
                   Today&apos;s Treatments
                 </h2>
-                <p className="mt-0.5 text-xs text-slate-400">
-                  Recent treatment sessions
+                <p className="mt-0.5 text-xs font-medium text-slate-400">
+                  Recorded clinical sessions
                 </p>
               </div>
+
               <Link
                 href="/dashboard/treatments"
-                className="text-xs font-semibold text-[#0692AB] hover:text-[#056B7D]"
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#0692ab] hover:text-[#056b7d] transition-colors"
               >
-                View all →
+                View history <ArrowRight size={14} />
               </Link>
             </div>
 
@@ -291,27 +334,33 @@ export default async function DashboardPage() {
                   return (
                     <div
                       key={treatment.id}
-                      className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-[#f7fcfd] transition-colors"
+                      className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-[#f4fbfd]/70 transition-colors"
                     >
-                      <div>
-                        <p className="text-sm font-medium text-[#16323A]">
-                          {name}
-                        </p>
-                        <p className="mt-0.5 text-xs text-slate-400">
-                          {(treatment.condition as any)?.name ||
-                            "Treatment session"}
-                        </p>
+                      <div className="flex items-center gap-3.5">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#01d0d8]/15 to-[#0692ab]/15 text-[#056b7d] ring-1 ring-[#01d0d8]/30">
+                          <Activity size={18} />
+                        </div>
+
+                        <div>
+                          <p className="text-sm font-bold text-[#11282e]">
+                            {name}
+                          </p>
+                          <p className="mt-0.5 text-xs font-medium text-[#0692ab]">
+                            {(treatment.condition as any)?.name ||
+                              "Therapy Session"}
+                          </p>
+                        </div>
                       </div>
 
                       <div className="text-right">
-                        <p className="text-xs text-slate-400 font-medium">
-                          Pain Score
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          Pain Scale
                         </p>
-                        <p className="mt-0.5 text-sm font-bold text-[#0692AB]">
+                        <span className="inline-block mt-0.5 rounded-full bg-[#e6f9fb] px-2.5 py-0.5 text-xs font-extrabold text-[#056b7d]">
                           {treatment.pain_score !== null
-                            ? `${treatment.pain_score}/10`
+                            ? `${treatment.pain_score} / 10`
                             : "-"}
-                        </p>
+                        </span>
                       </div>
                     </div>
                   );
@@ -323,28 +372,36 @@ export default async function DashboardPage() {
           </section>
         </div>
 
-        {/* Quick Actions */}
-        <section className="rounded-2xl border border-[#d9eef0] bg-white p-5 shadow-sm">
-          <h2 className="font-semibold text-[#16323A]">
-            Quick Actions
+        {/* Quick Actions Bar */}
+        <section className="rounded-3xl border border-[#d2eff2] bg-gradient-to-br from-white via-white to-[#f4fbfd] p-6 shadow-sm">
+          <h2 className="font-bold text-[#056b7d] text-base mb-4">
+            Quick Clinic Workflows
           </h2>
 
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <QuickAction
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <QuickActionCard
               href="/dashboard/patients/new"
-              title="Add Patient"
+              title="Add New Patient"
+              subtitle="Register patient file"
+              icon={<Users size={18} />}
             />
-            <QuickAction
+            <QuickActionCard
               href="/dashboard/appointments/new"
-              title="New Appointment"
+              title="Schedule Visit"
+              subtitle="Book appointment slot"
+              icon={<CalendarDays size={18} />}
             />
-            <QuickAction
+            <QuickActionCard
               href="/dashboard/clinical-library"
               title="Clinical Library"
+              subtitle="Protocols &amp; exercises"
+              icon={<Stethoscope size={18} />}
             />
-            <QuickAction
-              href="/dashboard/payments"
-              title="Payments & Collections"
+            <QuickActionCard
+              href="/dashboard/billing/new"
+              title="New Invoice"
+              subtitle="Generate bill &amp; receipt"
+              icon={<Receipt size={18} />}
             />
           </div>
         </section>
@@ -356,21 +413,31 @@ export default async function DashboardPage() {
 function StatCard({
   title,
   value,
+  subtitle,
   icon,
 }: {
   title: string;
   value: string;
+  subtitle: string;
   icon: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-[#d9eef0] bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-sm">
+    <div className="group rounded-2xl border border-[#d2eff2] bg-white p-5 shadow-sm transition-all duration-200 hover:border-[#01d0d8] hover:shadow-lg hover:shadow-[#01d0d8]/15 hover:-translate-y-1">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-slate-500">{title}</p>
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#e9fbfc] text-[#0692AB]">
+        <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          {title}
+        </p>
+
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#e6f9fb] to-[#f4fbfd] text-[#0692ab] ring-1 ring-[#01d0d8]/30 transition-transform duration-200 group-hover:scale-110">
           {icon}
         </div>
       </div>
-      <p className="mt-4 text-2xl font-bold text-[#16323A]">{value}</p>
+
+      <p className="mt-3 text-3xl font-extrabold text-[#056b7d] tracking-tight">
+        {value}
+      </p>
+
+      <p className="mt-1 text-xs font-medium text-slate-400">{subtitle}</p>
     </div>
   );
 }
@@ -378,24 +445,81 @@ function StatCard({
 function MoneyCard({
   title,
   value,
+  subtitle,
   icon,
+  highlight = false,
 }: {
   title: string;
   value: number;
+  subtitle: string;
   icon: React.ReactNode;
+  highlight?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-[#d9eef0] bg-white p-5 shadow-sm">
+    <div
+      className={`rounded-2xl p-5 border shadow-sm transition-all duration-200 hover:-translate-y-1 ${
+        highlight
+          ? "border-[#01d0d8]/40 bg-gradient-to-br from-[#e6f9fb] to-white shadow-md shadow-[#01d0d8]/10"
+          : "border-[#d2eff2] bg-white hover:border-[#01d0d8]"
+      }`}
+    >
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-slate-500">{title}</p>
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#e9fbfc] text-[#0692AB]">
+        <p className="text-xs font-bold uppercase tracking-wider text-[#056b7d]">
+          {title}
+        </p>
+
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+            highlight
+              ? "bg-gradient-to-br from-[#01d0d8] to-[#0692ab] text-white shadow-md shadow-[#01d0d8]/30"
+              : "bg-[#e6f9fb] text-[#0692ab]"
+          }`}
+        >
           {icon}
         </div>
       </div>
-      <p className="mt-4 text-2xl font-bold text-[#056B7D]">
+
+      <p className="mt-3 text-3xl font-extrabold text-[#056b7d] tracking-tight">
         {formatCurrency(value)}
       </p>
+
+      <p className="mt-1 text-xs font-medium text-slate-500">{subtitle}</p>
     </div>
+  );
+}
+
+function QuickActionCard({
+  href,
+  title,
+  subtitle,
+  icon,
+}: {
+  href: string;
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center justify-between rounded-2xl border border-[#d2eff2] bg-white p-4 transition-all duration-200 hover:border-[#01d0d8] hover:bg-[#e6f9fb]/50 hover:shadow-md hover:-translate-y-0.5"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e6f9fb] text-[#0692ab] transition-colors group-hover:bg-gradient-to-br group-hover:from-[#01d0d8] group-hover:to-[#0692ab] group-hover:text-white">
+          {icon}
+        </div>
+
+        <div>
+          <p className="text-sm font-bold text-[#056b7d]">{title}</p>
+          <p className="text-xs font-medium text-slate-400">{subtitle}</p>
+        </div>
+      </div>
+
+      <ArrowRight
+        size={16}
+        className="text-[#0692ab] transition-transform duration-200 group-hover:translate-x-1"
+      />
+    </Link>
   );
 }
 
@@ -403,7 +527,7 @@ function StatusBadge({ status }: { status: string | null }) {
   const value = status || "Scheduled";
 
   return (
-    <span className="rounded-full bg-[#e9fbfc] px-2.5 py-1 text-xs font-semibold text-[#0692AB]">
+    <span className="rounded-full bg-[#e6f9fb] border border-[#01d0d8]/30 px-3 py-1 text-xs font-bold text-[#056b7d]">
       {value}
     </span>
   );
@@ -411,21 +535,9 @@ function StatusBadge({ status }: { status: string | null }) {
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="p-10 text-center text-sm text-slate-400">
+    <div className="p-10 text-center text-xs font-medium text-slate-400">
       {text}
     </div>
-  );
-}
-
-function QuickAction({ href, title }: { href: string; title: string }) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center justify-between rounded-xl border border-[#d9eef0] bg-white px-4 py-3 text-sm font-semibold text-[#056B7D] transition hover:bg-[#e9fbfc]"
-    >
-      {title}
-      <ArrowRight size={16} className="text-[#0692AB]" />
-    </Link>
   );
 }
 

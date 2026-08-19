@@ -9,17 +9,19 @@ export default function MobileHeader({
   onMenuClick: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-30 flex h-[64px] items-center border-b border-[#d9eef0] bg-white px-4 lg:hidden">
-      <button
-        type="button"
-        onClick={onMenuClick}
-        className="mr-3 rounded-lg p-2 text-slate-500 hover:bg-[#e9fbfc] hover:text-[#0692ab]"
-        aria-label="Open navigation"
-      >
-        <Menu size={21} />
-      </button>
+    <header className="sticky top-0 z-30 flex h-[68px] items-center justify-between border-b border-[#d2eff2] bg-white/90 px-4 backdrop-blur-md shadow-sm shadow-[#0692ab]/5 lg:hidden">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="rounded-xl p-2 text-[#056b7d] hover:bg-[#e6f9fb] hover:text-[#0692ab] transition-colors"
+          aria-label="Open navigation"
+        >
+          <Menu size={22} />
+        </button>
 
-      <PhysioLogo />
+        <PhysioLogo />
+      </div>
     </header>
   );
 }
