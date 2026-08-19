@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Users } from "lucide-react";
+import { Plus, Search, Users, Phone, ArrowRight, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Patient = {
@@ -58,144 +58,178 @@ export default function PatientsPage() {
   });
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Patients
-          </h1>
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="mx-auto w-full max-w-[1600px] space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-3xl border border-[#d2eff2] bg-gradient-to-br from-white via-[#f4fbfd] to-[#e6f9fb] p-6 shadow-sm">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#01d0d8]/30 bg-white/80 px-3 py-1 text-xs font-bold text-[#056b7d]">
+              <Users size={14} className="text-[#01d0d8]" />
+              Patient Directory
+            </div>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Manage your clinic patients.
-          </p>
-        </div>
+            <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#056b7d]">
+              Clinic Patients
+            </h1>
 
-        <Link
-          href="/dashboard/patients/new"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800"
-        >
-          <Plus size={18} />
-          Add Patient
-        </Link>
-      </div>
-
-      {/* Search */}
-      <div className="mt-6 rounded-xl border bg-white p-4">
-        <div className="relative">
-          <Search
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by patient name, ID or phone..."
-            className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-slate-400"
-          />
-        </div>
-      </div>
-
-      {/* Patient table */}
-      <div className="mt-6 overflow-hidden rounded-xl border bg-white">
-        <div className="border-b px-6 py-4">
-          <div className="flex items-center gap-2">
-            <Users size={18} className="text-slate-500" />
-
-            <h2 className="font-semibold text-slate-900">
-              Patient List
-            </h2>
-
-            <span className="ml-2 rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">
-              {filteredPatients.length}
-            </span>
+            <p className="mt-1 text-xs sm:text-sm text-slate-500 font-medium">
+              View, search, and manage patient medical profiles.
+            </p>
           </div>
+
+          <Link
+            href="/dashboard/patients/new"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#0692ab] to-[#01d0d8] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#01d0d8]/25 transition-all hover:from-[#056b7d] hover:to-[#0692ab] hover:-translate-y-0.5 active:translate-y-0 shrink-0"
+          >
+            <Plus size={18} />
+            Add New Patient
+          </Link>
         </div>
 
-        {loading ? (
-          <div className="p-10 text-center text-sm text-slate-500">
-            Loading patients...
-          </div>
-        ) : filteredPatients.length === 0 ? (
-          <div className="p-10 text-center">
-            <Users
-              size={40}
-              className="mx-auto text-slate-300"
+        {/* Search */}
+        <div className="rounded-2xl border border-[#d2eff2] bg-white p-4 shadow-sm">
+          <div className="relative">
+            <Search
+              size={19}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0692ab]"
             />
 
-            <p className="mt-3 text-sm font-medium text-slate-700">
-              No patients found
-            </p>
-
-            <p className="mt-1 text-xs text-slate-500">
-              Add your first patient to get started.
-            </p>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by patient name, ID (e.g. PD-0001) or phone..."
+              className="w-full rounded-xl border border-[#d2eff2] bg-[#f4fbfd]/50 py-3 pl-11 pr-4 text-base sm:text-sm font-medium text-[#11282e] outline-none transition-all placeholder:text-slate-400 focus:border-[#01d0d8] focus:bg-white focus:ring-4 focus:ring-[#01d0d8]/15"
+            />
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                    Patient
-                  </th>
+        </div>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                    Phone
-                  </th>
+        {/* Patients Table Container */}
+        <div className="overflow-hidden rounded-3xl border border-[#d2eff2] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#e6f9fb] bg-gradient-to-r from-white to-[#f4fbfd] px-6 py-4">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#e6f9fb] text-[#0692ab] ring-1 ring-[#01d0d8]/30">
+                <Users size={18} />
+              </div>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                    Gender
-                  </th>
+              <h2 className="font-bold text-[#056b7d] text-base">
+                Registered Patients
+              </h2>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-slate-500">
-                    Status
-                  </th>
-                </tr>
-              </thead>
+              <span className="rounded-full bg-[#e6f9fb] border border-[#01d0d8]/30 px-3 py-0.5 text-xs font-extrabold text-[#056b7d]">
+                {filteredPatients.length}
+              </span>
+            </div>
+          </div>
 
-              <tbody className="divide-y">
-                {filteredPatients.map((patient) => (
-                  <tr
-                    key={patient.id}
-                    className="hover:bg-slate-50"
-                  >
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/dashboard/patients/${patient.id}`}
-                        className="block"
-                      >
-                        <p className="text-sm font-medium text-slate-900 hover:underline">
-                          {patient.first_name}{" "}
-                          {patient.last_name ?? ""}
-                        </p>
+          {loading ? (
+            <div className="p-12 text-center text-sm font-medium text-slate-400">
+              Loading patient records...
+            </div>
+          ) : filteredPatients.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e6f9fb] text-[#0692ab]">
+                <UserPlus size={28} />
+              </div>
 
-                        <p className="mt-1 text-xs text-slate-500">
-                          {patient.patient_code}
-                        </p>
-                      </Link>
-                    </td>
+              <p className="mt-4 text-base font-bold text-[#056b7d]">
+                No patients found
+              </p>
 
-                    <td className="px-6 py-4 text-sm text-slate-600">
-                      {patient.phone || "-"}
-                    </td>
+              <p className="mt-1 text-xs text-slate-400 max-w-sm mx-auto">
+                No matching patients registered in your clinic. Add a new patient record to get started.
+              </p>
 
-                    <td className="px-6 py-4 text-sm text-slate-600">
-                      {patient.gender || "-"}
-                    </td>
-
-                    <td className="px-6 py-4">
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                        {patient.status}
-                      </span>
-                    </td>
+              <Link
+                href="/dashboard/patients/new"
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#0692ab] to-[#01d0d8] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-[#01d0d8]/20"
+              >
+                <Plus size={16} />
+                Register First Patient
+              </Link>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-[#e6f9fb] bg-[#f4fbfd]/50 text-xs font-extrabold uppercase tracking-wider text-[#0692ab]">
+                    <th className="px-6 py-3.5">Patient Details</th>
+                    <th className="px-6 py-3.5">Phone</th>
+                    <th className="px-6 py-3.5">Gender</th>
+                    <th className="px-6 py-3.5">Status</th>
+                    <th className="px-6 py-3.5 text-right">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+
+                <tbody className="divide-y divide-[#f4fbfd]">
+                  {filteredPatients.map((patient) => {
+                    const initials = `${patient.first_name?.[0] || ""}${
+                      patient.last_name?.[0] || ""
+                    }`.toUpperCase();
+
+                    return (
+                      <tr
+                        key={patient.id}
+                        className="table-row-hover transition-colors group"
+                      >
+                        <td className="px-6 py-4">
+                          <Link
+                            href={`/dashboard/patients/${patient.id}`}
+                            className="flex items-center gap-3"
+                          >
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#01d0d8] to-[#0692ab] text-white text-xs font-extrabold shadow-sm">
+                              {initials || "P"}
+                            </div>
+
+                            <div>
+                              <p className="text-sm font-bold text-[#11282e] group-hover:text-[#0692ab] transition-colors">
+                                {patient.first_name}{" "}
+                                {patient.last_name ?? ""}
+                              </p>
+
+                              <p className="mt-0.5 text-xs font-mono font-semibold text-slate-400">
+                                {patient.patient_code}
+                              </p>
+                            </div>
+                          </Link>
+                        </td>
+
+                        <td className="px-6 py-4 text-sm font-medium text-slate-600">
+                          {patient.phone ? (
+                            <span className="flex items-center gap-1.5 text-slate-700">
+                              <Phone size={14} className="text-[#01d0d8]" />
+                              {patient.phone}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">-</span>
+                          )}
+                        </td>
+
+                        <td className="px-6 py-4 text-sm font-medium text-slate-600">
+                          {patient.gender || "-"}
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span className="rounded-full bg-[#e6f9fb] border border-[#01d0d8]/30 px-3 py-1 text-xs font-bold text-[#056b7d]">
+                            {patient.status || "Active"}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4 text-right">
+                          <Link
+                            href={`/dashboard/patients/${patient.id}`}
+                            className="inline-flex items-center gap-1 rounded-xl bg-[#f4fbfd] px-3 py-1.5 text-xs font-bold text-[#0692ab] hover:bg-[#e6f9fb] hover:text-[#056b7d] transition-colors"
+                          >
+                            View Record <ArrowRight size={14} />
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

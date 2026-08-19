@@ -2,18 +2,10 @@
 
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useState } from "react";
+import PhysioLogo from "./physio-logo";
+import { Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export function ForgotPasswordForm({
   className,
@@ -31,7 +23,6 @@ export function ForgotPasswordForm({
     setError(null);
 
     try {
-      // The url which will be included in the email. This URL needs to be configured in your redirect URLs in the Supabase dashboard at https://supabase.com/dashboard/project/_/auth/url-configuration
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/update-password`,
       });
@@ -46,60 +37,87 @@ export function ForgotPasswordForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      {success ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
-            <CardDescription>Password reset instructions sent</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              If you registered using your email and password, you will receive
-              a password reset email.
+      <div className="rounded-3xl border border-[#d2eff2] bg-white/90 p-8 shadow-xl shadow-[#0692ab]/10 backdrop-blur-xl space-y-6">
+        <div className="flex flex-col items-center text-center space-y-2">
+          <PhysioLogo />
+          <h1 className="text-xl font-extrabold text-[#056b7d] tracking-tight mt-2">
+            Reset Password
+          </h1>
+          <p className="text-xs text-slate-500 font-medium max-w-xs">
+            Enter your clinic email to receive a password reset link.
+          </p>
+        </div>
+
+        {success ? (
+          <div className="text-center space-y-4 py-4">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+              <CheckCircle2 size={28} />
+            </div>
+
+            <h2 className="text-base font-bold text-[#056b7d]">
+              Check Your Email Inbox
+            </h2>
+
+            <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
+              We sent password reset instructions to <strong>{email}</strong>.
             </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Reset Your Password</CardTitle>
-            <CardDescription>
-              Type in your email and we&apos;ll send you a link to reset your
-              password
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleForgotPassword}>
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Sending..." : "Send reset email"}
-                </Button>
-              </div>
-              <div className="mt-4 text-center text-sm">
-                Already have an account?{" "}
-                <Link
-                  href="/auth/login"
-                  className="underline underline-offset-4"
-                >
-                  Login
-                </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+
+            <Link
+              href="/auth/login"
+              className="inline-flex items-center gap-2 text-xs font-bold text-[#0692ab] hover:underline pt-2"
+            >
+              Back to Login Page <ArrowRight size={14} />
+            </Link>
+          </div>
+        ) : (
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <div className="space-y-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#056b7d]">
+                Email Address
+              </label>
+
+              <input
+                type="email"
+                placeholder="physiodynamics10@gmail.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-xl border border-[#d2eff2] bg-[#f4fbfd]/50 px-4 py-3 text-base sm:text-sm font-medium text-[#11282e] outline-none transition-all focus:border-[#01d0d8] focus:bg-white focus:ring-4 focus:ring-[#01d0d8]/15"
+              />
+            </div>
+
+            {error && (
+              <p className="text-xs font-bold text-red-600 bg-red-50 p-3 rounded-xl border border-red-200">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#0692ab] to-[#01d0d8] py-3.5 text-sm font-bold text-white shadow-lg shadow-[#01d0d8]/25 transition-all hover:from-[#056b7d] hover:to-[#0692ab] disabled:opacity-50"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Sending Link...
+                </>
+              ) : (
+                <>
+                  Send Reset Link <ArrowRight size={16} />
+                </>
+              )}
+            </button>
+
+            <div className="pt-2 text-center text-xs text-slate-500 font-medium">
+              Remembered your password?{" "}
+              <Link href="/auth/login" className="font-bold text-[#0692ab] hover:underline">
+                Log In
+              </Link>
+            </div>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import {
   Dumbbell,
   ClipboardList,
   CalendarDays,
+  Stethoscope,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
@@ -18,13 +19,8 @@ type Props = {
   }>;
 };
 
-export default async function TreatmentSessionPage({
-  params,
-}: Props) {
-  const {
-    id: patientId,
-    sessionId,
-  } = await params;
+export default async function TreatmentSessionPage({ params }: Props) {
+  const { id: patientId, sessionId } = await params;
 
   const supabase = await createClient();
 
@@ -38,7 +34,6 @@ export default async function TreatmentSessionPage({
         last_name,
         patient_code
       ),
-
       condition:conditions (
         id,
         name,
@@ -46,10 +41,9 @@ export default async function TreatmentSessionPage({
           name
         )
       ),
-
       protocol:treatment_protocols (
         id,
-        name
+        title
       )
     `)
     .eq("id", sessionId)
@@ -65,275 +59,200 @@ export default async function TreatmentSessionPage({
     .select(`
       id,
       sets,
-      repetitions,
-      duration,
+      reps,
+      exercise_name,
       notes,
-
       exercise:exercises (
         id,
         name,
         category,
-        target_muscle,
         instructions
       )
     `)
-    .eq("treatment_session_id", sessionId);
+    .eq("session_id", sessionId);
 
   const fullName = session.patient
     ? `${session.patient.first_name} ${session.patient.last_name ?? ""}`.trim()
     : "Patient";
 
   return (
-    <div className="p-6">
-      {/* Back */}
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        {/* Back Link */}
+        <Link
+          href={`/dashboard/patients/${patientId}/treatments`}
+          className="inline-flex items-center gap-2 text-xs font-bold text-[#0692ab] hover:text-[#056b7d] transition-colors"
+        >
+          <ArrowLeft size={16} />
+          Back to Treatment Sessions History
+        </Link>
 
-      <Link
-        href={`/dashboard/patients/${patientId}/treatments`}
-        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900"
-      >
-        <ArrowLeft size={16} />
-        Back to Treatment History
-      </Link>
-
-      {/* Header */}
-
-      <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-400 font-mono font-semibold">
-            {session.patient?.patient_code}
-          </p>
-
-          <h1 className="mt-1 text-2xl font-semibold text-slate-900">
-            Treatment Session #{session.session_number}
-          </h1>
-
-          <p className="mt-1 text-sm text-slate-500">
-            {fullName}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 text-sm text-slate-500 font-medium bg-slate-100 px-3 py-1.5 rounded-lg">
-          <CalendarDays size={17} />
-          {formatDate(session.session_date)}
-        </div>
-      </div>
-
-      {/* Classification */}
-
-      <section className="mt-6 rounded-xl border bg-white p-6">
-        <div className="flex items-center gap-2">
-          <Activity
-            size={19}
-            className="text-slate-500"
-          />
-
-          <h2 className="font-semibold text-slate-900">
-            Clinical Classification
-          </h2>
-        </div>
-
-        <div className="mt-5 grid gap-4 sm:grid-cols-3">
-          <Info
-            label="Physiotherapy Type"
-            value={
-              (session.condition as any)?.physiotherapy_type?.name || "-"
-            }
-          />
-
-          <Info
-            label="Condition"
-            value={
-              (session.condition as any)?.name || "-"
-            }
-          />
-
-          <Info
-            label="Protocol"
-            value={
-              (session.protocol as any)?.name || "-"
-            }
-          />
-        </div>
-      </section>
-
-      {/* Pain & Clinical Notes */}
-
-      <section className="mt-6 rounded-xl border bg-white p-6">
-        <h2 className="font-semibold text-slate-900">
-          Pain & Clinical Notes
-        </h2>
-
-        <div className="mt-5 grid gap-6 sm:grid-cols-2">
+        {/* Header Card */}
+        <div className="rounded-3xl border border-[#d2eff2] bg-gradient-to-br from-white via-[#f4fbfd] to-[#e6f9fb] p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-xs text-slate-400 font-medium">
-              Pain Score
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#01d0d8]/30 bg-white/80 px-3 py-1 text-xs font-bold text-[#056b7d]">
+              <Activity size={14} className="text-[#01d0d8]" />
+              Session Record
+            </div>
+
+            <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#056b7d]">
+              Treatment Session Details
+            </h1>
+
+            <p className="mt-1 text-xs sm:text-sm text-slate-500 font-medium">
+              {fullName} • {session.patient?.patient_code}
             </p>
-
-            <p className="mt-2 text-3xl font-semibold text-teal-700">
-              {session.pain_score !== null
-                ? `${session.pain_score}/10`
-                : "-"}
-            </p>
           </div>
 
-          <Info
-            label="Subjective"
-            value={session.subjective}
-          />
-        </div>
-
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 border-t pt-4">
-          <Info
-            label="Objective"
-            value={session.objective}
-          />
-
-          <Info
-            label="Response to Treatment"
-            value={session.response_to_treatment}
-          />
-        </div>
-      </section>
-
-      {/* Treatment Provided */}
-
-      <section className="mt-6 rounded-xl border bg-white p-6">
-        <div className="flex items-center gap-2">
-          <ClipboardList
-            size={19}
-            className="text-slate-500"
-          />
-
-          <h2 className="font-semibold text-slate-900">
-            Treatment Provided
-          </h2>
-        </div>
-
-        <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-600">
-          {session.treatment_details || "No treatment details recorded."}
-        </p>
-      </section>
-
-      {/* Exercises */}
-
-      <section className="mt-6 overflow-hidden rounded-xl border bg-white">
-        <div className="flex items-center gap-2 border-b px-6 py-4">
-          <Dumbbell
-            size={19}
-            className="text-slate-500"
-          />
-
-          <h2 className="font-semibold text-slate-900">
-            Prescribed Exercises
-          </h2>
-
-          <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
-            {exercises?.length ?? 0}
-          </span>
-        </div>
-
-        {!exercises || exercises.length === 0 ? (
-          <div className="p-8 text-center text-sm text-slate-400">
-            No exercises recorded for this session.
+          <div className="flex items-center gap-2 text-xs font-bold text-[#056b7d] bg-white px-4 py-2.5 rounded-2xl border border-[#01d0d8]/30 shadow-sm self-start sm:self-auto">
+            <CalendarDays size={16} className="text-[#01d0d8]" />
+            {formatDate(session.session_date)}
           </div>
-        ) : (
-          <div className="divide-y">
-            {exercises.map((item: any, index: number) => (
-              <div
-                key={item.id}
-                className="px-6 py-5"
-              >
-                <div className="flex gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-700">
-                    {index + 1}
-                  </div>
+        </div>
 
-                  <div className="flex-1">
-                    <h3 className="font-medium text-slate-900">
-                      {item.exercise?.name}
-                    </h3>
-
-                    <p className="mt-1 text-xs text-slate-400">
-                      {item.exercise?.category}
-                      {item.exercise?.target_muscle
-                        ? ` · ${item.exercise.target_muscle}`
-                        : ""}
-                    </p>
-
-                    <div className="mt-3 flex flex-wrap gap-5 text-sm">
-                      {item.sets && (
-                        <Info
-                          label="Sets"
-                          value={item.sets}
-                        />
-                      )}
-
-                      {item.repetitions && (
-                        <Info
-                          label="Repetitions"
-                          value={item.repetitions}
-                        />
-                      )}
-
-                      {item.duration && (
-                        <Info
-                          label="Duration"
-                          value={item.duration}
-                        />
-                      )}
-                    </div>
-
-                    {item.notes && (
-                      <p className="mt-3 text-sm text-slate-500">
-                        {item.notes}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+        {/* Clinical Classification */}
+        <section className="rounded-3xl border border-[#d2eff2] bg-white p-6 shadow-sm">
+          <div className="flex items-center gap-2 border-b border-[#e6f9fb] pb-3">
+            <Stethoscope size={18} className="text-[#0692ab]" />
+            <h2 className="font-bold text-[#056b7d] text-base">
+              Clinical Classification
+            </h2>
           </div>
-        )}
-      </section>
 
-      {/* Plan */}
-
-      <section className="mt-6 rounded-xl border bg-white p-6">
-        <h2 className="font-semibold text-slate-900">
-          Next Plan
-        </h2>
-
-        <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-600">
-          {session.next_plan || "No next plan recorded."}
-        </p>
-
-        {session.next_appointment && (
-          <div className="mt-5 border-t pt-5">
+          <div className="mt-5 grid gap-4 sm:grid-cols-3">
             <Info
-              label="Next Scheduled Appointment"
-              value={formatDate(session.next_appointment)}
+              label="Physiotherapy Type"
+              value={(session.condition as any)?.physiotherapy_type?.name || "-"}
+            />
+
+            <Info
+              label="Condition"
+              value={(session.condition as any)?.name || "-"}
+            />
+
+            <Info
+              label="Treatment Protocol"
+              value={(session.protocol as any)?.title || "-"}
             />
           </div>
-        )}
-      </section>
+        </section>
+
+        {/* Pain & Clinical Observations */}
+        <section className="rounded-3xl border border-[#d2eff2] bg-white p-6 shadow-sm">
+          <h2 className="font-bold text-[#056b7d] text-base border-b border-[#e6f9fb] pb-3">
+            Pain Scale &amp; Observations
+          </h2>
+
+          <div className="mt-5 grid gap-6 sm:grid-cols-2">
+            <div>
+              <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#0692ab]">
+                Pain Score
+              </p>
+
+              <div className="mt-2 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#e6f9fb] to-[#f4fbfd] px-4 py-2.5 border border-[#01d0d8]/30">
+                <span className="text-2xl font-extrabold text-[#056b7d]">
+                  {session.pain_score !== null ? `${session.pain_score} / 10` : "-"}
+                </span>
+              </div>
+            </div>
+
+            <Info label="Subjective (Patient Symptoms)" value={session.subjective_notes} />
+          </div>
+
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 border-t border-[#e6f9fb] pt-4">
+            <Info label="Objective (Therapist Exam)" value={session.objective_notes} />
+            <Info label="Response to Therapy" value={session.patient_response} />
+          </div>
+        </section>
+
+        {/* Treatment Provided */}
+        <section className="rounded-3xl border border-[#d2eff2] bg-white p-6 shadow-sm">
+          <div className="flex items-center gap-2 border-b border-[#e6f9fb] pb-3">
+            <ClipboardList size={18} className="text-[#0692ab]" />
+            <h2 className="font-bold text-[#056b7d] text-base">
+              Treatment Provided
+            </h2>
+          </div>
+
+          <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed font-medium text-slate-600">
+            {session.treatment_provided || "No specific treatment details recorded."}
+          </p>
+        </section>
+
+        {/* Prescribed Exercises */}
+        <section className="overflow-hidden rounded-3xl border border-[#d2eff2] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#e6f9fb] bg-gradient-to-r from-white to-[#f4fbfd] px-6 py-4">
+            <div className="flex items-center gap-2">
+              <Dumbbell size={18} className="text-[#0692ab]" />
+              <h2 className="font-bold text-[#056b7d] text-base">
+                Prescribed Exercises
+              </h2>
+            </div>
+
+            <span className="rounded-full bg-[#e6f9fb] border border-[#01d0d8]/30 px-3 py-0.5 text-xs font-extrabold text-[#056b7d]">
+              {exercises?.length ?? 0} Exercises
+            </span>
+          </div>
+
+          {!exercises || exercises.length === 0 ? (
+            <div className="p-8 text-center text-xs font-medium text-slate-400">
+              No specific exercises logged for this treatment session.
+            </div>
+          ) : (
+            <div className="divide-y divide-[#f4fbfd]">
+              {exercises.map((item: any, index: number) => (
+                <div key={item.id} className="px-6 py-4">
+                  <div className="flex items-start gap-3.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#01d0d8] to-[#0692ab] text-white text-xs font-extrabold shadow-sm">
+                      {index + 1}
+                    </div>
+
+                    <div className="flex-1">
+                      <h3 className="text-sm font-bold text-[#056b7d]">
+                        {item.exercise_name || item.exercise?.name}
+                      </h3>
+
+                      <div className="mt-2 flex flex-wrap gap-4 text-xs font-semibold text-slate-500">
+                        {item.sets && <span>Sets: <strong>{item.sets}</strong></span>}
+                        {item.reps && <span>Reps: <strong>{item.reps}</strong></span>}
+                      </div>
+
+                      {item.notes && (
+                        <p className="mt-2 text-xs font-medium text-slate-500">
+                          {item.notes}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Next Plan */}
+        <section className="rounded-3xl border border-[#d2eff2] bg-white p-6 shadow-sm">
+          <h2 className="font-bold text-[#056b7d] text-base border-b border-[#e6f9fb] pb-3">
+            Next Treatment Plan
+          </h2>
+
+          <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed font-medium text-slate-600">
+            {session.next_plan || "No next plan recorded."}
+          </p>
+        </section>
+      </div>
     </div>
   );
 }
 
-function Info({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | null;
-}) {
+function Info({ label, value }: { label: string; value: string | null }) {
   return (
     <div>
-      <p className="text-xs text-slate-400">
+      <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#0692ab]">
         {label}
       </p>
 
-      <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-700 font-medium">
+      <p className="mt-1 whitespace-pre-wrap text-sm font-bold text-[#11282e]">
         {value || "-"}
       </p>
     </div>

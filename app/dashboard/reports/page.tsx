@@ -9,6 +9,7 @@ import {
   Banknote,
   Smartphone,
   IndianRupee,
+  TrendingUp,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
@@ -131,12 +132,9 @@ export default function ReportsPage() {
     )
     .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
 
-  /*
-   * Condition counts
-   */
   const conditionCounts = treatments.reduce<Record<string, number>>(
     (result, treatment) => {
-      const name = treatment.condition?.name || "Not specified";
+      const name = treatment.condition?.name || "General Physiotherapy";
       result[name] = (result[name] || 0) + 1;
       return result;
     },
@@ -147,9 +145,6 @@ export default function ReportsPage() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
 
-  /*
-   * Appointment status
-   */
   const completedAppointments = appointments.filter(
     (item) => item.status?.toLowerCase() === "completed"
   ).length;
@@ -159,206 +154,200 @@ export default function ReportsPage() {
   ).length;
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white">
-              <BarChart3 size={20} />
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="mx-auto w-full max-w-[1600px] space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-3xl border border-[#d2eff2] bg-gradient-to-br from-white via-[#f4fbfd] to-[#e6f9fb] p-6 shadow-sm">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#01d0d8]/30 bg-white/80 px-3 py-1 text-xs font-bold text-[#056b7d]">
+              <TrendingUp size={14} className="text-[#01d0d8]" />
+              Analytics &amp; Intelligence
             </div>
 
-            <div>
-              <h1 className="text-2xl font-semibold text-slate-900">
-                Reports
-              </h1>
+            <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#056b7d]">
+              Clinical Reports &amp; Revenue
+            </h1>
 
-              <p className="mt-1 text-sm text-slate-500">
-                Clinic performance and financial reports.
-              </p>
-            </div>
+            <p className="mt-1 text-xs sm:text-sm text-slate-500 font-medium">
+              Performance metrics for Physio Dynamics clinic.
+            </p>
+          </div>
+
+          {/* Date filter */}
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <label className="text-[11px] font-extrabold uppercase tracking-wider text-[#056b7d] block">
+              From Date
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="mt-1 block w-full rounded-xl border border-[#d2eff2] bg-white px-3 py-2 text-xs font-bold text-[#11282e] outline-none focus:border-[#01d0d8]"
+              />
+            </label>
+
+            <label className="text-[11px] font-extrabold uppercase tracking-wider text-[#056b7d] block">
+              To Date
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="mt-1 block w-full rounded-xl border border-[#d2eff2] bg-white px-3 py-2 text-xs font-bold text-[#11282e] outline-none focus:border-[#01d0d8]"
+              />
+            </label>
           </div>
         </div>
 
-        {/* Date filter */}
+        {loading ? (
+          <div className="rounded-3xl border border-[#d2eff2] bg-white p-12 text-center text-xs font-medium text-slate-400">
+            Generating clinic reports...
+          </div>
+        ) : (
+          <>
+            {/* Main KPI Grid */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard
+                title="Total Revenue"
+                value={formatCurrency(totalRevenue)}
+                icon={<IndianRupee size={20} />}
+              />
 
-        <div className="flex flex-col gap-2 sm:flex-row items-end">
-          <label className="text-xs text-slate-500 font-medium">
-            From
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="mt-1 block rounded-lg border bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
-            />
-          </label>
+              <StatCard
+                title="New Registered Patients"
+                value={String(patients.length)}
+                icon={<Users size={20} />}
+              />
 
-          <label className="text-xs text-slate-500 font-medium">
-            To
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="mt-1 block rounded-lg border bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
-            />
-          </label>
-        </div>
+              <StatCard
+                title="Appointments Scheduled"
+                value={String(appointments.length)}
+                icon={<CalendarDays size={20} />}
+              />
+
+              <StatCard
+                title="Sessions Conducted"
+                value={String(treatments.length)}
+                icon={<Activity size={20} />}
+              />
+            </div>
+
+            {/* Collection Method Breakdown */}
+            <div className="grid gap-6 lg:grid-cols-3">
+              <RevenueCard
+                title="Cash Collection"
+                value={cashRevenue}
+                icon={<Banknote size={22} />}
+                color="emerald"
+              />
+
+              <RevenueCard
+                title="UPI Collection"
+                value={upiRevenue}
+                icon={<Smartphone size={22} />}
+                color="purple"
+              />
+
+              <RevenueCard
+                title="Gross Total Collection"
+                value={totalRevenue}
+                icon={<IndianRupee size={22} />}
+                color="cyan"
+              />
+            </div>
+
+            {/* Patient & Appointment Summaries */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              <section className="rounded-3xl border border-[#d2eff2] bg-white p-6 shadow-sm space-y-4">
+                <h2 className="font-bold text-[#056b7d] text-base border-b border-[#e6f9fb] pb-3">
+                  Patient Activity Summary
+                </h2>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <MiniStat
+                    label="New Patients Registered"
+                    value={String(patients.length)}
+                  />
+
+                  <MiniStat
+                    label="Sessions Conducted"
+                    value={String(treatments.length)}
+                  />
+                </div>
+              </section>
+
+              <section className="rounded-3xl border border-[#d2eff2] bg-white p-6 shadow-sm space-y-4">
+                <h2 className="font-bold text-[#056b7d] text-base border-b border-[#e6f9fb] pb-3">
+                  Appointment Performance
+                </h2>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <MiniStat
+                    label="Booked"
+                    value={String(appointments.length)}
+                  />
+
+                  <MiniStat
+                    label="Completed"
+                    value={String(completedAppointments)}
+                  />
+
+                  <MiniStat
+                    label="Cancelled"
+                    value={String(cancelledAppointments)}
+                  />
+                </div>
+              </section>
+            </div>
+
+            {/* Conditions Breakdown Progress Bars */}
+            <section className="overflow-hidden rounded-3xl border border-[#d2eff2] bg-white shadow-sm">
+              <div className="border-b border-[#e6f9fb] bg-gradient-to-r from-white to-[#f4fbfd] px-6 py-4">
+                <h2 className="font-bold text-[#056b7d] text-base">
+                  Top Treated Clinical Conditions
+                </h2>
+
+                <p className="mt-0.5 text-xs font-medium text-slate-400">
+                  Distribution of patient pathologies treated during this timeframe.
+                </p>
+              </div>
+
+              {topConditions.length === 0 ? (
+                <div className="p-10 text-center text-xs font-medium text-slate-400">
+                  No treatment session records in selected date range.
+                </div>
+              ) : (
+                <div className="divide-y divide-[#f4fbfd]">
+                  {topConditions.map(([name, count]) => {
+                    const percentage = treatments.length
+                      ? Math.round((count / treatments.length) * 100)
+                      : 0;
+
+                    return (
+                      <div key={name} className="px-6 py-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-[#056b7d]">
+                            {name}
+                          </span>
+
+                          <span className="text-xs font-extrabold text-[#0692ab]">
+                            {count} sessions ({percentage}%)
+                          </span>
+                        </div>
+
+                        <div className="h-2.5 overflow-hidden rounded-full bg-[#e6f9fb] border border-[#01d0d8]/20">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-[#0692ab] to-[#01d0d8] transition-all duration-500"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          </>
+        )}
       </div>
-
-      {loading ? (
-        <div className="mt-10 rounded-xl border bg-white p-12 text-center text-sm text-slate-500">
-          Loading reports...
-        </div>
-      ) : (
-        <>
-          {/* Main statistics */}
-
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              title="Total Revenue"
-              value={formatCurrency(totalRevenue)}
-              icon={<IndianRupee size={20} />}
-            />
-
-            <StatCard
-              title="New Patients"
-              value={String(patients.length)}
-              icon={<Users size={20} />}
-            />
-
-            <StatCard
-              title="Appointments"
-              value={String(appointments.length)}
-              icon={<CalendarDays size={20} />}
-            />
-
-            <StatCard
-              title="Treatment Sessions"
-              value={String(treatments.length)}
-              icon={<Activity size={20} />}
-            />
-          </div>
-
-          {/* Revenue */}
-
-          <div className="grid gap-6 lg:grid-cols-3">
-            <RevenueCard
-              title="Cash Collection"
-              value={cashRevenue}
-              icon={<Banknote size={20} />}
-            />
-
-            <RevenueCard
-              title="UPI Collection"
-              value={upiRevenue}
-              icon={<Smartphone size={20} />}
-            />
-
-            <RevenueCard
-              title="Total Collection"
-              value={totalRevenue}
-              icon={<IndianRupee size={20} />}
-            />
-          </div>
-
-          {/* Patient / Appointment */}
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            <section className="rounded-xl border bg-white p-6 shadow-sm">
-              <h2 className="font-semibold text-slate-900">
-                Patient Report
-              </h2>
-
-              <div className="mt-6 grid grid-cols-2 gap-4">
-                <MiniStat
-                  label="New Patients Registered"
-                  value={String(patients.length)}
-                />
-
-                <MiniStat
-                  label="Treatment Sessions Completed"
-                  value={String(treatments.length)}
-                />
-              </div>
-            </section>
-
-            <section className="rounded-xl border bg-white p-6 shadow-sm">
-              <h2 className="font-semibold text-slate-900">
-                Appointment Summary
-              </h2>
-
-              <div className="mt-6 grid grid-cols-3 gap-4">
-                <MiniStat
-                  label="Total"
-                  value={String(appointments.length)}
-                />
-
-                <MiniStat
-                  label="Completed"
-                  value={String(completedAppointments)}
-                />
-
-                <MiniStat
-                  label="Cancelled"
-                  value={String(cancelledAppointments)}
-                />
-              </div>
-            </section>
-          </div>
-
-          {/* Conditions */}
-
-          <section className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="border-b px-6 py-4">
-              <h2 className="font-semibold text-slate-900">
-                Treatments by Condition
-              </h2>
-
-              <p className="mt-1 text-xs text-slate-500">
-                Most frequently treated conditions during the selected period.
-              </p>
-            </div>
-
-            {topConditions.length === 0 ? (
-              <div className="p-10 text-center text-sm text-slate-400">
-                No treatment data for this period.
-              </div>
-            ) : (
-              <div className="divide-y">
-                {topConditions.map(([name, count]) => {
-                  const percentage = treatments.length
-                    ? Math.round((count / treatments.length) * 100)
-                    : 0;
-
-                  return (
-                    <div key={name} className="px-6 py-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-slate-700">
-                          {name}
-                        </span>
-
-                        <span className="text-sm font-semibold text-slate-900">
-                          {count} ({percentage}%)
-                        </span>
-                      </div>
-
-                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                        <div
-                          className="h-full rounded-full bg-teal-600 transition-all duration-500"
-                          style={{
-                            width: `${percentage}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        </>
-      )}
     </div>
   );
 }
@@ -373,20 +362,18 @@ function StatCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border bg-white p-5 shadow-sm">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500 font-medium">
+    <div className="rounded-3xl border border-[#d2eff2] bg-white p-5 shadow-sm space-y-3">
+      <div className="flex items-center justify-between text-[#0692ab]">
+        <p className="text-xs font-extrabold uppercase tracking-wider">
           {title}
         </p>
 
-        <div className="text-slate-400">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#e6f9fb] text-[#0692ab]">
           {icon}
         </div>
       </div>
 
-      <p className="mt-3 text-2xl font-semibold text-slate-900">
-        {value}
-      </p>
+      <p className="text-2xl font-extrabold text-[#056b7d]">{value}</p>
     </div>
   );
 }
@@ -395,44 +382,45 @@ function RevenueCard({
   title,
   value,
   icon,
+  color,
 }: {
   title: string;
   value: number;
   icon: React.ReactNode;
+  color: "emerald" | "purple" | "cyan";
 }) {
+  const bgClass =
+    color === "emerald"
+      ? "bg-emerald-50/60 border-emerald-200 text-emerald-800"
+      : color === "purple"
+      ? "bg-purple-50/60 border-purple-200 text-purple-800"
+      : "bg-[#e6f9fb]/60 border-[#01d0d8]/30 text-[#056b7d]";
+
   return (
-    <div className="rounded-xl border bg-white p-6 shadow-sm">
+    <div className={`rounded-3xl border p-6 shadow-sm ${bgClass}`}>
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500 font-medium">
+        <p className="text-xs font-extrabold uppercase tracking-wider">
           {title}
         </p>
 
-        <div className="text-slate-400">
-          {icon}
-        </div>
+        <div>{icon}</div>
       </div>
 
-      <p className="mt-3 text-2xl font-semibold text-slate-900">
+      <p className="mt-3 text-2xl sm:text-3xl font-extrabold">
         {formatCurrency(value)}
       </p>
     </div>
   );
 }
 
-function MiniStat({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-slate-50 p-4 border">
-      <p className="text-xs text-slate-500 font-medium">
+    <div className="rounded-2xl bg-[#f4fbfd] border border-[#d2eff2] p-4">
+      <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#0692ab]">
         {label}
       </p>
 
-      <p className="mt-2 text-xl font-semibold text-slate-900">
+      <p className="mt-1.5 text-xl font-extrabold text-[#056b7d]">
         {value}
       </p>
     </div>
@@ -449,7 +437,6 @@ function formatCurrency(amount: number) {
 
 function getToday() {
   const date = new Date();
-
   return [
     date.getFullYear(),
     String(date.getMonth() + 1).padStart(2, "0"),
@@ -459,7 +446,6 @@ function getToday() {
 
 function getMonthStart() {
   const date = new Date();
-
   return [
     date.getFullYear(),
     String(date.getMonth() + 1).padStart(2, "0"),

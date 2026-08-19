@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Receipt, Plus, Search, IndianRupee, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { Receipt, Plus, Search, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Invoice = {
@@ -75,167 +75,219 @@ export default function BillingPage() {
   const totalPending = invoices.reduce((acc, i) => acc + (Number(i.balance_amount) || 0), 0);
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Billing & Invoices
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Manage patient invoices, session charges, and payment status.
-          </p>
-        </div>
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="mx-auto w-full max-w-[1600px] space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-3xl border border-[#d2eff2] bg-gradient-to-br from-white via-[#f4fbfd] to-[#e6f9fb] p-6 shadow-sm">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#01d0d8]/30 bg-white/80 px-3 py-1 text-xs font-bold text-[#056b7d]">
+              <Receipt size={14} className="text-[#01d0d8]" />
+              Invoicing &amp; Cash Flow
+            </div>
 
-        <Link
-          href="/dashboard/billing/new"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800"
-        >
-          <Plus size={18} />
-          Create Invoice
-        </Link>
-      </div>
+            <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#056b7d]">
+              Billing &amp; Invoices
+            </h1>
 
-      {/* Summary KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border bg-white p-5">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs uppercase font-bold tracking-wider">Total Billed</span>
-            <Receipt size={18} />
+            <p className="mt-1 text-xs sm:text-sm text-slate-500 font-medium">
+              Generate patient treatment invoices and track Cash &amp; UPI collections.
+            </p>
           </div>
-          <p className="mt-3 text-2xl font-bold text-slate-900">₹{totalBilled.toLocaleString("en-IN")}</p>
-          <p className="mt-1 text-xs text-slate-500">{invoices.length} total invoices</p>
+
+          <Link
+            href="/dashboard/billing/new"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#0692ab] to-[#01d0d8] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#01d0d8]/25 transition-all hover:from-[#056b7d] hover:to-[#0692ab] hover:-translate-y-0.5 active:translate-y-0 shrink-0"
+          >
+            <Plus size={18} />
+            Create Invoice
+          </Link>
         </div>
 
-        <div className="rounded-xl border bg-white p-5">
-          <div className="flex items-center justify-between text-emerald-600">
-            <span className="text-xs uppercase font-bold tracking-wider">Total Collected</span>
-            <CheckCircle2 size={18} />
+        {/* Summary KPI Cards */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-3xl border border-[#d2eff2] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between text-[#0692ab]">
+              <span className="text-xs font-extrabold uppercase tracking-wider">Total Billed</span>
+              <Receipt size={20} />
+            </div>
+            <p className="mt-3 text-2xl sm:text-3xl font-extrabold text-[#056b7d]">
+              ₹{totalBilled.toLocaleString("en-IN")}
+            </p>
+            <p className="mt-1 text-xs font-medium text-slate-400">{invoices.length} Invoices Issued</p>
           </div>
-          <p className="mt-3 text-2xl font-bold text-emerald-700">₹{totalCollected.toLocaleString("en-IN")}</p>
-          <p className="mt-1 text-xs text-emerald-600">Received payments</p>
-        </div>
 
-        <div className="rounded-xl border bg-white p-5">
-          <div className="flex items-center justify-between text-amber-600">
-            <span className="text-xs uppercase font-bold tracking-wider">Pending Balance</span>
-            <AlertCircle size={18} />
+          <div className="rounded-3xl border border-[#d2eff2] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between text-emerald-600">
+              <span className="text-xs font-extrabold uppercase tracking-wider">Collected (Cash &amp; UPI)</span>
+              <CheckCircle2 size={20} />
+            </div>
+            <p className="mt-3 text-2xl sm:text-3xl font-extrabold text-emerald-600">
+              ₹{totalCollected.toLocaleString("en-IN")}
+            </p>
+            <p className="mt-1 text-xs font-medium text-emerald-600">Received Payments</p>
           </div>
-          <p className="mt-3 text-2xl font-bold text-amber-700">₹{totalPending.toLocaleString("en-IN")}</p>
-          <p className="mt-1 text-xs text-amber-600">Outstanding amount</p>
-        </div>
-      </div>
 
-      {/* Search */}
-      <div className="rounded-xl border bg-white p-4">
-        <div className="relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by invoice number, patient name or ID..."
-            className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-slate-400"
-          />
-        </div>
-      </div>
-
-      {/* Invoices List Table */}
-      <div className="overflow-hidden rounded-xl border bg-white">
-        <div className="border-b px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Receipt size={18} className="text-slate-500" />
-            <h2 className="font-semibold text-slate-900">Invoices List</h2>
-            <span className="ml-2 rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">
-              {filteredInvoices.length}
-            </span>
+          <div className="rounded-3xl border border-[#d2eff2] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between text-amber-600">
+              <span className="text-xs font-extrabold uppercase tracking-wider">Pending Balance</span>
+              <AlertCircle size={20} />
+            </div>
+            <p className="mt-3 text-2xl sm:text-3xl font-extrabold text-amber-600">
+              ₹{totalPending.toLocaleString("en-IN")}
+            </p>
+            <p className="mt-1 text-xs font-medium text-amber-600">Outstanding Balance</p>
           </div>
         </div>
 
-        {loading ? (
-          <div className="p-10 text-center text-sm text-slate-500">Loading invoices...</div>
-        ) : filteredInvoices.length === 0 ? (
-          <div className="p-10 text-center">
-            <Receipt size={40} className="mx-auto text-slate-300" />
-            <p className="mt-3 text-sm font-medium text-slate-700">No invoices found</p>
-            <p className="mt-1 text-xs text-slate-500">Create your first invoice to get started.</p>
+        {/* Search Input */}
+        <div className="rounded-2xl border border-[#d2eff2] bg-white p-4 shadow-sm">
+          <div className="relative">
+            <Search
+              size={19}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0692ab]"
+            />
+
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search invoice #, patient name or ID..."
+              className="w-full rounded-xl border border-[#d2eff2] bg-[#f4fbfd]/50 py-3 pl-11 pr-4 text-base sm:text-sm font-medium text-[#11282e] outline-none transition-all placeholder:text-slate-400 focus:border-[#01d0d8] focus:bg-white focus:ring-4 focus:ring-[#01d0d8]/15"
+            />
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-slate-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Invoice</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Patient</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Date</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Total</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Paid</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Balance</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filteredInvoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 font-mono font-semibold text-sm text-slate-900">
-                      {inv.invoice_number}
-                    </td>
-                    <td className="px-6 py-4">
-                      {inv.patient ? (
-                        <Link
-                          href={`/dashboard/patients/${inv.patient.id}`}
-                          className="font-medium text-sm text-slate-900 hover:underline"
-                        >
-                          {inv.patient.first_name} {inv.patient.last_name ?? ""}
-                          <p className="text-xs text-slate-500">{inv.patient.patient_code}</p>
-                        </Link>
-                      ) : (
-                        <span className="text-sm text-slate-500">Unknown Patient</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
-                      {new Date(`${inv.invoice_date}T00:00:00`).toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-slate-900">
-                      ₹{Number(inv.total_amount).toLocaleString("en-IN")}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-emerald-700 font-medium">
-                      ₹{Number(inv.paid_amount).toLocaleString("en-IN")}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-amber-700 font-medium">
-                      ₹{Number(inv.balance_amount).toLocaleString("en-IN")}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          inv.status === "Paid"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : inv.status === "Partially Paid"
-                            ? "bg-amber-100 text-amber-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {inv.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/dashboard/billing/${inv.id}`}
-                        className="text-xs font-bold text-teal-700 hover:underline"
-                      >
-                        View / Pay →
-                      </Link>
-                    </td>
+        </div>
+
+        {/* Invoices List Table */}
+        <div className="overflow-hidden rounded-3xl border border-[#d2eff2] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#e6f9fb] bg-gradient-to-r from-white to-[#f4fbfd] px-6 py-4">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#e6f9fb] text-[#0692ab] ring-1 ring-[#01d0d8]/30">
+                <Receipt size={18} />
+              </div>
+
+              <h2 className="font-bold text-[#056b7d] text-base">
+                Invoices Directory
+              </h2>
+
+              <span className="rounded-full bg-[#e6f9fb] border border-[#01d0d8]/30 px-3 py-0.5 text-xs font-extrabold text-[#056b7d]">
+                {filteredInvoices.length}
+              </span>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="p-12 text-center text-xs font-medium text-slate-400">
+              Loading invoices...
+            </div>
+          ) : filteredInvoices.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e6f9fb] text-[#0692ab]">
+                <Receipt size={28} />
+              </div>
+
+              <p className="mt-4 text-base font-bold text-[#056b7d]">
+                No invoices found
+              </p>
+
+              <p className="mt-1 text-xs text-slate-400 max-w-sm mx-auto">
+                No matching invoices recorded in clinic system.
+              </p>
+
+              <Link
+                href="/dashboard/billing/new"
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#0692ab] to-[#01d0d8] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-[#01d0d8]/20"
+              >
+                <Plus size={16} />
+                Create First Invoice
+              </Link>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-[#e6f9fb] bg-[#f4fbfd]/50 text-xs font-extrabold uppercase tracking-wider text-[#0692ab]">
+                    <th className="px-6 py-3.5">Invoice #</th>
+                    <th className="px-6 py-3.5">Patient Details</th>
+                    <th className="px-6 py-3.5">Date</th>
+                    <th className="px-6 py-3.5">Total</th>
+                    <th className="px-6 py-3.5">Paid</th>
+                    <th className="px-6 py-3.5">Balance</th>
+                    <th className="px-6 py-3.5">Status</th>
+                    <th className="px-6 py-3.5 text-right">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+
+                <tbody className="divide-y divide-[#f4fbfd]">
+                  {filteredInvoices.map((inv) => (
+                    <tr key={inv.id} className="table-row-hover transition-colors group">
+                      <td className="px-6 py-4 font-mono font-bold text-sm text-[#056b7d]">
+                        {inv.invoice_number}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        {inv.patient ? (
+                          <Link
+                            href={`/dashboard/patients/${inv.patient.id}`}
+                            className="text-sm font-bold text-[#11282e] group-hover:text-[#0692ab] transition-colors"
+                          >
+                            {inv.patient.first_name} {inv.patient.last_name ?? ""}
+                            <p className="text-xs font-mono font-semibold text-slate-400">
+                              {inv.patient.patient_code}
+                            </p>
+                          </Link>
+                        ) : (
+                          <span className="text-xs font-medium text-slate-400">Unknown Patient</span>
+                        )}
+                      </td>
+
+                      <td className="px-6 py-4 text-xs font-semibold text-slate-600">
+                        {new Date(`${inv.invoice_date}T00:00:00`).toLocaleDateString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </td>
+
+                      <td className="px-6 py-4 text-sm font-extrabold text-[#11282e]">
+                        ₹{Number(inv.total_amount).toLocaleString("en-IN")}
+                      </td>
+
+                      <td className="px-6 py-4 text-sm font-extrabold text-emerald-600">
+                        ₹{Number(inv.paid_amount).toLocaleString("en-IN")}
+                      </td>
+
+                      <td className="px-6 py-4 text-sm font-extrabold text-amber-600">
+                        ₹{Number(inv.balance_amount).toLocaleString("en-IN")}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            inv.status === "Paid"
+                              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                              : inv.status === "Partially Paid"
+                              ? "bg-amber-100 text-amber-800 border border-amber-200"
+                              : "bg-red-100 text-red-800 border border-red-200"
+                          }`}
+                        >
+                          {inv.status}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4 text-right">
+                        <Link
+                          href={`/dashboard/billing/${inv.id}`}
+                          className="inline-flex items-center gap-1 rounded-xl bg-[#f4fbfd] px-3 py-1.5 text-xs font-bold text-[#0692ab] hover:bg-[#e6f9fb] hover:text-[#056b7d] transition-colors"
+                        >
+                          View / Pay <ArrowRight size={14} />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

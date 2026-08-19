@@ -8,26 +8,25 @@ import {
   UserRound,
   IndianRupee,
   Receipt,
+  Loader2,
+  Database,
+  ArrowRight,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 
 type SettingsData = {
   id: string;
-
   clinic_name: string;
   address: string;
   phone: string;
   email: string;
   website: string;
-
   therapist_name: string;
   therapist_qualification: string;
-
   consultation_fee: number;
   followup_fee: number;
   treatment_fee: number;
-
   invoice_prefix: string;
   receipt_footer: string;
 };
@@ -61,34 +60,30 @@ export default function SettingsPage() {
     if (data) {
       setForm(data);
     } else {
-      // Fallback default form if table is empty
       setForm({
         id: "",
         clinic_name: "Physio Dynamics",
-        address: "Panamaram, Wayanad, Kerala",
-        phone: "",
-        email: "",
+        address:
+          "UB City Centre Building, Near Crescent Public School, Panamaram, Wayanad, Kerala 670721",
+        phone: "+91 6282929104",
+        email: "physiodynamics10@gmail.com",
         website: "https://www.physio-dynamics.com/",
         therapist_name: "Sandra Thomas",
-        therapist_qualification: "BPT / MPT",
+        therapist_qualification: "BPT / MPT (Physiotherapist)",
         consultation_fee: 500,
         followup_fee: 400,
         treatment_fee: 700,
         invoice_prefix: "PD",
-        receipt_footer: "Thank you for choosing Physio Dynamics.",
+        receipt_footer: "Thank you for choosing Physio Dynamics Clinic.",
       });
     }
 
     setLoading(false);
   }
 
-  function updateField(
-    field: keyof SettingsData,
-    value: string | number
-  ) {
+  function updateField(field: keyof SettingsData, value: string | number) {
     setForm((current) => {
       if (!current) return current;
-
       return {
         ...current,
         [field]: value,
@@ -167,14 +162,18 @@ export default function SettingsPage() {
   }
 
   if (loading) {
-    return <div className="p-6 text-sm text-slate-500">Loading settings...</div>;
+    return (
+      <div className="p-8 text-center text-xs font-medium text-slate-400">
+        Loading clinic configuration...
+      </div>
+    );
   }
 
   if (!form) {
     return (
       <div className="p-6">
-        <div className="rounded-xl border bg-white p-8 text-center">
-          <p className="text-sm text-slate-500">
+        <div className="rounded-3xl border border-[#d2eff2] bg-white p-8 text-center">
+          <p className="text-sm font-bold text-slate-500">
             Clinic settings could not be loaded.
           </p>
         </div>
@@ -183,197 +182,206 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        {/* Header Banner */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-3xl border border-[#d2eff2] bg-gradient-to-br from-white via-[#f4fbfd] to-[#e6f9fb] p-6 shadow-sm">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#01d0d8]/30 bg-white/80 px-3 py-1 text-xs font-bold text-[#056b7d]">
+              <Settings size={14} className="text-[#01d0d8]" />
+              System Preferences
+            </div>
 
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white">
-          <Settings size={20} />
-        </div>
+            <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#056b7d]">
+              Clinic &amp; System Settings
+            </h1>
 
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Clinic Settings
-          </h1>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Manage your clinic information, therapist credentials, and default fees.
-          </p>
-        </div>
-      </div>
-
-      <form onSubmit={saveSettings} className="max-w-5xl space-y-6">
-        {/* Clinic */}
-
-        <section className="rounded-xl border bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-2">
-            <Building2 size={19} className="text-slate-500" />
-            <h2 className="font-semibold text-slate-900">
-              Clinic Information
-            </h2>
+            <p className="mt-1 text-xs sm:text-sm text-slate-500 font-medium">
+              Manage clinic branding, therapist credentials, and default service rates.
+            </p>
           </div>
+        </div>
 
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <Input
-              label="Clinic Name"
-              value={form.clinic_name}
-              onChange={(value) => updateField("clinic_name", value)}
-            />
+        <form onSubmit={saveSettings} className="space-y-6">
+          {/* Section 1: Clinic Info */}
+          <section className="rounded-3xl border border-[#d2eff2] bg-white p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 border-b border-[#e6f9fb] pb-3">
+              <Building2 size={18} className="text-[#0692ab]" />
+              <h2 className="font-bold text-[#056b7d] text-base">
+                Clinic Information &amp; Address
+              </h2>
+            </div>
 
-            <Input
-              label="Phone"
-              value={form.phone}
-              placeholder="e.g. +91 98765 43210"
-              onChange={(value) => updateField("phone", value)}
-            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input
+                label="Clinic Name"
+                value={form.clinic_name}
+                onChange={(value) => updateField("clinic_name", value)}
+              />
 
-            <Input
-              label="Email"
-              value={form.email}
-              placeholder="e.g. info@physio-dynamics.com"
-              onChange={(value) => updateField("email", value)}
-            />
+              <Input
+                label="Phone Number"
+                value={form.phone}
+                placeholder="e.g. +91 6282929104"
+                onChange={(value) => updateField("phone", value)}
+              />
 
-            <Input
-              label="Website"
-              value={form.website}
-              placeholder="https://www.physio-dynamics.com/"
-              onChange={(value) => updateField("website", value)}
-            />
+              <Input
+                label="Email Address"
+                value={form.email}
+                placeholder="e.g. physiodynamics10@gmail.com"
+                onChange={(value) => updateField("email", value)}
+              />
 
-            <div className="md:col-span-2">
-              <Textarea
-                label="Clinic Address"
-                value={form.address}
-                onChange={(value) => updateField("address", value)}
+              <Input
+                label="Official Website"
+                value={form.website}
+                placeholder="https://www.physio-dynamics.com/"
+                onChange={(value) => updateField("website", value)}
+              />
+
+              <div className="sm:col-span-2">
+                <Textarea
+                  label="Full Clinic Address"
+                  value={form.address}
+                  onChange={(value) => updateField("address", value)}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Section 2: Therapist Profile */}
+          <section className="rounded-3xl border border-[#d2eff2] bg-white p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 border-b border-[#e6f9fb] pb-3">
+              <UserRound size={18} className="text-[#0692ab]" />
+              <h2 className="font-bold text-[#056b7d] text-base">
+                Lead Therapist Credentials
+              </h2>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input
+                label="Lead Therapist Name"
+                value={form.therapist_name}
+                placeholder="e.g. Sandra Thomas"
+                onChange={(value) => updateField("therapist_name", value)}
+              />
+
+              <Input
+                label="Qualifications / Degrees"
+                placeholder="e.g. BPT / MPT"
+                value={form.therapist_qualification}
+                onChange={(value) => updateField("therapist_qualification", value)}
               />
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Therapist */}
+          {/* Section 3: Standard Rates */}
+          <section className="rounded-3xl border border-[#d2eff2] bg-white p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 border-b border-[#e6f9fb] pb-3">
+              <IndianRupee size={18} className="text-[#0692ab]" />
+              <h2 className="font-bold text-[#056b7d] text-base">
+                Standard Consultation &amp; Treatment Rates (₹)
+              </h2>
+            </div>
 
-        <section className="rounded-xl border bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-2">
-            <UserRound size={19} className="text-slate-500" />
-            <h2 className="font-semibold text-slate-900">
-              Therapist Information
-            </h2>
-          </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <NumberInput
+                label="Initial Consultation (₹)"
+                value={form.consultation_fee}
+                onChange={(value) => updateField("consultation_fee", value)}
+              />
 
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <NumberInput
+                label="Follow-up Visit (₹)"
+                value={form.followup_fee}
+                onChange={(value) => updateField("followup_fee", value)}
+              />
+
+              <NumberInput
+                label="Therapy Session (₹)"
+                value={form.treatment_fee}
+                onChange={(value) => updateField("treatment_fee", value)}
+              />
+            </div>
+          </section>
+
+          {/* Section 4: Invoice Branding */}
+          <section className="rounded-3xl border border-[#d2eff2] bg-white p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 border-b border-[#e6f9fb] pb-3">
+              <Receipt size={18} className="text-[#0692ab]" />
+              <h2 className="font-bold text-[#056b7d] text-base">
+                Invoice &amp; Billing Customization
+              </h2>
+            </div>
+
             <Input
-              label="Therapist Name"
-              value={form.therapist_name}
-              placeholder="e.g. Dr. Sandra Thomas"
-              onChange={(value) => updateField("therapist_name", value)}
-            />
-
-            <Input
-              label="Qualification"
-              placeholder="e.g. BPT, MPT (Orthopaedics)"
-              value={form.therapist_qualification}
-              onChange={(value) => updateField("therapist_qualification", value)}
-            />
-          </div>
-        </section>
-
-        {/* Fees */}
-
-        <section className="rounded-xl border bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-2">
-            <IndianRupee size={19} className="text-slate-500" />
-            <h2 className="font-semibold text-slate-900">
-              Standard Service Fees (₹)
-            </h2>
-          </div>
-
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
-            <NumberInput
-              label="Initial Consultation (₹)"
-              value={form.consultation_fee}
-              onChange={(value) => updateField("consultation_fee", value)}
-            />
-
-            <NumberInput
-              label="Follow-up Session (₹)"
-              value={form.followup_fee}
-              onChange={(value) => updateField("followup_fee", value)}
-            />
-
-            <NumberInput
-              label="Treatment Session (₹)"
-              value={form.treatment_fee}
-              onChange={(value) => updateField("treatment_fee", value)}
-            />
-          </div>
-        </section>
-
-        {/* Invoice */}
-
-        <section className="rounded-xl border bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-2">
-            <Receipt size={19} className="text-slate-500" />
-            <h2 className="font-semibold text-slate-900">
-              Invoice & Receipt Defaults
-            </h2>
-          </div>
-
-          <div className="mt-5 space-y-4">
-            <Input
-              label="Invoice Number Prefix"
+              label="Invoice Code Prefix"
               value={form.invoice_prefix}
               onChange={(value) => updateField("invoice_prefix", value)}
             />
 
             <Textarea
-              label="Receipt Footer Message"
+              label="Invoice Footer Note"
               value={form.receipt_footer}
               onChange={(value) => updateField("receipt_footer", value)}
             />
-          </div>
-        </section>
+          </section>
 
-        {/* Data Management */}
+          {/* Data Backup Banner */}
+          <section className="rounded-3xl border border-[#d2eff2] bg-gradient-to-r from-white to-[#f4fbfd] p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#e6f9fb] text-[#0692ab]">
+                <Database size={22} />
+              </div>
 
-        <section className="rounded-xl border bg-white p-6 shadow-sm">
-          <h2 className="font-semibold text-slate-900">
-            Data Management & Backups
-          </h2>
+              <div>
+                <h3 className="font-bold text-[#056b7d] text-sm">
+                  Data Backup &amp; CSV Export Center
+                </h3>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Export your clinic data into JSON or CSV spreadsheets and keep an offline backup.
-          </p>
+                <p className="text-xs text-slate-400 font-medium mt-0.5">
+                  Export complete patient databases into JSON or Excel CSV spreadsheets.
+                </p>
+              </div>
+            </div>
 
-          <div className="mt-4">
             <a
               href="/dashboard/settings/data"
-              className="inline-flex items-center rounded-lg border bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-[#01d0d8]/40 bg-white px-4 py-2.5 text-xs font-bold text-[#056b7d] hover:bg-[#e6f9fb] transition-colors shadow-sm shrink-0"
             >
-              Manage Data & Backups →
+              Backup &amp; Export Data <ArrowRight size={14} />
             </a>
+          </section>
+
+          {/* Form Submit Footer */}
+          <div className="flex items-center justify-end gap-3 pt-2">
+            {message && (
+              <p className="text-xs font-extrabold text-emerald-800 bg-emerald-100 px-4 py-2 rounded-2xl border border-emerald-200">
+                {message}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#0692ab] to-[#01d0d8] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#01d0d8]/25 transition-all hover:from-[#056b7d] hover:to-[#0692ab] hover:shadow-xl disabled:opacity-50"
+            >
+              {saving ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Saving Settings...
+                </>
+              ) : (
+                <>
+                  <Save size={18} />
+                  Save Clinic Settings
+                </>
+              )}
+            </button>
           </div>
-        </section>
-
-        {/* Save */}
-
-        <div className="flex items-center justify-end gap-4">
-          {message && (
-            <p className="text-sm font-semibold text-teal-700 bg-teal-50 px-3 py-1.5 rounded-lg border border-teal-200">
-              {message}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-6 py-3 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-          >
-            <Save size={17} />
-            {saving ? "Saving..." : "Save Settings"}
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }
@@ -391,7 +399,7 @@ function Input({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-medium text-slate-700">
+      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#056b7d]">
         {label}
       </span>
 
@@ -399,7 +407,7 @@ function Input({
         value={value || ""}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400"
+        className="w-full rounded-xl border border-[#d2eff2] bg-[#f4fbfd]/40 px-4 py-3 text-base sm:text-sm font-medium text-[#11282e] outline-none transition-all focus:border-[#01d0d8] focus:bg-white focus:ring-4 focus:ring-[#01d0d8]/15"
       />
     </label>
   );
@@ -416,7 +424,7 @@ function NumberInput({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-medium text-slate-700">
+      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#056b7d]">
         {label}
       </span>
 
@@ -425,7 +433,7 @@ function NumberInput({
         min="0"
         value={value || 0}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400"
+        className="w-full rounded-xl border border-[#d2eff2] bg-[#f4fbfd]/40 px-4 py-3 text-base sm:text-sm font-extrabold text-[#11282e] outline-none transition-all focus:border-[#01d0d8] focus:bg-white focus:ring-4 focus:ring-[#01d0d8]/15"
       />
     </label>
   );
@@ -442,7 +450,7 @@ function Textarea({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-medium text-slate-700">
+      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#056b7d]">
         {label}
       </span>
 
@@ -450,7 +458,7 @@ function Textarea({
         rows={3}
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400"
+        className="w-full rounded-xl border border-[#d2eff2] bg-[#f4fbfd]/40 px-4 py-3 text-base sm:text-sm font-medium text-[#11282e] outline-none transition-all focus:border-[#01d0d8] focus:bg-white focus:ring-4 focus:ring-[#01d0d8]/15"
       />
     </label>
   );
