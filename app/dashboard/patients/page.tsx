@@ -27,6 +27,89 @@ export default function PatientsPage() {
     loadPatients();
   }, []);
 
+const sampleDummyPatients: Patient[] = [
+  {
+    id: "p1",
+    patient_code: "PD-2026-001",
+    first_name: "John",
+    last_name: "Mathew",
+    phone: "+91 98765 43210",
+    gender: "Male",
+    status: "Active",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "p2",
+    patient_code: "PD-2026-002",
+    first_name: "Deepak",
+    last_name: "Sharma",
+    phone: "+91 98123 45678",
+    gender: "Male",
+    status: "Active",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "p3",
+    patient_code: "PD-2026-003",
+    first_name: "Abid",
+    last_name: "Hussain",
+    phone: "+91 97654 32109",
+    gender: "Male",
+    status: "Active",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "p4",
+    patient_code: "PD-2026-004",
+    first_name: "Farhan",
+    last_name: "Ali",
+    phone: "+91 96543 21098",
+    gender: "Male",
+    status: "Active",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "p5",
+    patient_code: "PD-2026-005",
+    first_name: "Rahul",
+    last_name: "Kumar",
+    phone: "+91 95432 10987",
+    gender: "Male",
+    status: "Active",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "p6",
+    patient_code: "PD-2026-006",
+    first_name: "Sanjay",
+    last_name: "Patel",
+    phone: "+91 94321 09876",
+    gender: "Male",
+    status: "Active",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "p7",
+    patient_code: "PD-2026-007",
+    first_name: "Rohan",
+    last_name: "Varma",
+    phone: "+91 93210 98765",
+    gender: "Male",
+    status: "Active",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "p8",
+    patient_code: "PD-2026-008",
+    first_name: "Kavita",
+    last_name: "Menon",
+    phone: "+91 92109 87654",
+    gender: "Female",
+    status: "Active",
+    created_at: new Date().toISOString(),
+  },
+];
+
   async function loadPatients() {
     setLoading(true);
 
@@ -37,12 +120,19 @@ export default function PatientsPage() {
       )
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error(error);
-    } else {
-      setPatients(data ?? []);
-    }
+    const dbPatients = (data ?? []) as Patient[];
+    const combinedMap = new Map<string, Patient>();
 
+    sampleDummyPatients.forEach((p) => combinedMap.set(p.patient_code, p));
+    dbPatients.forEach((p) => {
+      if (p.patient_code) {
+        combinedMap.set(p.patient_code, p);
+      } else if (p.id) {
+        combinedMap.set(p.id, p);
+      }
+    });
+
+    setPatients(Array.from(combinedMap.values()));
     setLoading(false);
   }
 

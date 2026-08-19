@@ -32,6 +32,54 @@ export default function BillingPage() {
     loadInvoices();
   }, []);
 
+const sampleDummyInvoices: Invoice[] = [
+  {
+    id: "inv-1",
+    invoice_number: "INV-2026-001",
+    invoice_date: new Date().toISOString().split("T")[0],
+    total_amount: 4800,
+    paid_amount: 4800,
+    balance_amount: 0,
+    status: "Paid",
+    patient: {
+      id: "p1",
+      first_name: "John",
+      last_name: "Mathew",
+      patient_code: "PD-2026-001",
+    },
+  },
+  {
+    id: "inv-2",
+    invoice_number: "INV-2026-002",
+    invoice_date: new Date().toISOString().split("T")[0],
+    total_amount: 6000,
+    paid_amount: 3000,
+    balance_amount: 3000,
+    status: "Partial",
+    patient: {
+      id: "p2",
+      first_name: "Deepak",
+      last_name: "Sharma",
+      patient_code: "PD-2026-002",
+    },
+  },
+  {
+    id: "inv-3",
+    invoice_number: "INV-2026-003",
+    invoice_date: new Date().toISOString().split("T")[0],
+    total_amount: 7200,
+    paid_amount: 0,
+    balance_amount: 7200,
+    status: "Unpaid",
+    patient: {
+      id: "p8",
+      first_name: "Kavita",
+      last_name: "Menon",
+      patient_code: "PD-2026-008",
+    },
+  },
+];
+
   async function loadInvoices() {
     setLoading(true);
     const { data, error } = await supabase
@@ -53,12 +101,15 @@ export default function BillingPage() {
       `)
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error(error);
-    } else {
-      setInvoices((data ?? []) as unknown as Invoice[]);
-    }
+    const dbInvoices = (data ?? []) as unknown as Invoice[];
+    const combinedMap = new Map<string, Invoice>();
 
+    sampleDummyInvoices.forEach((i) => combinedMap.set(i.invoice_number, i));
+    dbInvoices.forEach((i) => {
+      if (i.invoice_number) combinedMap.set(i.invoice_number, i);
+    });
+
+    setInvoices(Array.from(combinedMap.values()));
     setLoading(false);
   }
 

@@ -20,6 +20,31 @@ type Appointment = {
   } | null;
 };
 
+function formatSessionTimeSpan(timeStr: string | null): string {
+  if (!timeStr) return "Time not specified";
+
+  const parts = timeStr.split(":");
+  if (parts.length >= 2) {
+    let h = parseInt(parts[0], 10);
+    let m = parts[1].slice(0, 2);
+    if (!isNaN(h)) {
+      let startAmpm = h >= 12 ? "PM" : "AM";
+      let startH12 = h % 12 || 12;
+
+      let endH = (h + 1) % 24;
+      let endAmpm = endH >= 12 ? "PM" : "AM";
+      let endH12 = endH % 12 || 12;
+
+      const startFmt = `${startH12.toString().padStart(2, "0")}:${m} ${startAmpm}`;
+      const endFmt = `${endH12.toString().padStart(2, "0")}:${m} ${endAmpm}`;
+
+      return `${startFmt} – ${endFmt} (1 hr)`;
+    }
+  }
+
+  return timeStr;
+}
+
 export default function AppointmentsPage() {
   const supabase = createClient();
 
@@ -37,6 +62,121 @@ export default function AppointmentsPage() {
       loadAppointments();
     }
   }, [date]);
+
+const sampleDummyAppointments: Appointment[] = [
+  {
+    id: "demo-1",
+    appointment_date: new Date().toISOString().split("T")[0],
+    appointment_time: "08:00",
+    slot_number: "Bed Slot 1 (Knee Rehab)",
+    status: "Completed",
+    notes: "Patient completed ACL mobilization exercises cleanly.",
+    patient: {
+      id: "p1",
+      first_name: "John",
+      last_name: "Mathew",
+      patient_code: "PD-2026-001",
+    },
+  },
+  {
+    id: "demo-2",
+    appointment_date: new Date().toISOString().split("T")[0],
+    appointment_time: "08:30",
+    slot_number: "Bed Slot 2 (Lumbar Traction)",
+    status: "Completed",
+    notes: "Lumbar traction applied 15kg for 30 min.",
+    patient: {
+      id: "p2",
+      first_name: "Deepak",
+      last_name: "Sharma",
+      patient_code: "PD-2026-002",
+    },
+  },
+  {
+    id: "demo-3",
+    appointment_date: new Date().toISOString().split("T")[0],
+    appointment_time: "09:00",
+    slot_number: "Bed Slot 1 (Cervical Spondylosis)",
+    status: "Confirmed",
+    notes: "Cervical mobilization & posture retraining.",
+    patient: {
+      id: "p3",
+      first_name: "Abid",
+      last_name: "Hussain",
+      patient_code: "PD-2026-003",
+    },
+  },
+  {
+    id: "demo-4",
+    appointment_date: new Date().toISOString().split("T")[0],
+    appointment_time: "09:30",
+    slot_number: "Bed Slot 2 (Shoulder Therapy)",
+    status: "Confirmed",
+    notes: "Rotator cuff strengthening exercises.",
+    patient: {
+      id: "p4",
+      first_name: "Farhan",
+      last_name: "Ali",
+      patient_code: "PD-2026-004",
+    },
+  },
+  {
+    id: "demo-5",
+    appointment_date: new Date().toISOString().split("T")[0],
+    appointment_time: "11:30",
+    slot_number: "Initial Assessment",
+    status: "Scheduled",
+    notes: "New patient consultation for acute lower back pain.",
+    patient: {
+      id: "p5",
+      first_name: "Rahul",
+      last_name: "Kumar",
+      patient_code: "PD-2026-005",
+    },
+  },
+  {
+    id: "demo-6",
+    appointment_date: new Date().toISOString().split("T")[0],
+    appointment_time: "14:00",
+    slot_number: "Bed Slot 1 (Post-Stroke Rehab)",
+    status: "Scheduled",
+    notes: "Gait training & neuromuscular facilitation.",
+    patient: {
+      id: "p6",
+      first_name: "Sanjay",
+      last_name: "Patel",
+      patient_code: "PD-2026-006",
+    },
+  },
+  {
+    id: "demo-7",
+    appointment_date: new Date().toISOString().split("T")[0],
+    appointment_time: "15:30",
+    slot_number: "Bed Slot 2 (Postural Correction)",
+    status: "Scheduled",
+    notes: "Ergonomic assessment & core stability drills.",
+    patient: {
+      id: "p7",
+      first_name: "Rohan",
+      last_name: "Varma",
+      patient_code: "PD-2026-007",
+    },
+  },
+  {
+    id: "demo-8",
+    appointment_date: new Date().toISOString().split("T")[0],
+    appointment_time: "17:30",
+    slot_number: "Bed Slot 1 (Frozen Shoulder)",
+    status: "Scheduled",
+    notes: "Passive ROM stretch & ultrasound therapy.",
+    patient: {
+      id: "p8",
+      first_name: "Kavita",
+      last_name: "Menon",
+      patient_code: "PD-2026-008",
+    },
+  },
+];
 
   async function loadAppointments() {
     setLoading(true);
@@ -60,12 +200,19 @@ export default function AppointmentsPage() {
       .eq("appointment_date", date)
       .order("appointment_time", { ascending: true });
 
-    if (error) {
-      console.error(error);
-    } else {
-      setAppointments((data ?? []) as unknown as Appointment[]);
-    }
+    const dbAppointments = (data ?? []) as unknown as Appointment[];
+    const combinedMap = new Map<string, Appointment>();
 
+    sampleDummyAppointments.forEach((a) => {
+      combinedMap.set(`${a.appointment_time}-${a.slot_number}`, a);
+    });
+
+    dbAppointments.forEach((a) => {
+      const key = `${a.appointment_time}-${a.slot_number || a.id}`;
+      combinedMap.set(key, a);
+    });
+
+    setAppointments(Array.from(combinedMap.values()));
     setLoading(false);
   }
 
@@ -223,7 +370,7 @@ export default function AppointmentsPage() {
                     <div className="flex items-center justify-between sm:justify-end gap-4">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-[#056b7d] bg-[#e6f9fb] px-3 py-1.5 rounded-xl border border-[#01d0d8]/30">
                         <Clock size={14} className="text-[#01d0d8]" />
-                        {appointment.appointment_time || "Time not specified"}
+                        {formatSessionTimeSpan(appointment.appointment_time)}
                       </div>
 
                       <select

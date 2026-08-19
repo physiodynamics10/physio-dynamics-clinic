@@ -32,6 +32,54 @@ export default function AssessmentsDirectoryPage() {
     loadAssessments();
   }, []);
 
+const sampleDummyAssessments: Assessment[] = [
+  {
+    id: "ass-1",
+    assessment_date: new Date().toISOString().split("T")[0],
+    chief_complaint: "Left knee stiffness and joint pain while running",
+    diagnosis: "Patellofemoral Pain Syndrome & Mild Chondromalacia",
+    pain_score: 6,
+    pain_location: "Anterior Left Knee",
+    created_at: new Date().toISOString(),
+    patient: {
+      id: "p1",
+      first_name: "John",
+      last_name: "Mathew",
+      patient_code: "PD-2026-001",
+    },
+  },
+  {
+    id: "ass-2",
+    assessment_date: new Date().toISOString().split("T")[0],
+    chief_complaint: "Lower back stiffness radiating to buttock",
+    diagnosis: "L4-L5 Lumbar Disc Protrusion with Sciatica",
+    pain_score: 7,
+    pain_location: "Lumbar Spine L4-L5",
+    created_at: new Date().toISOString(),
+    patient: {
+      id: "p2",
+      first_name: "Deepak",
+      last_name: "Sharma",
+      patient_code: "PD-2026-002",
+    },
+  },
+  {
+    id: "ass-3",
+    assessment_date: new Date().toISOString().split("T")[0],
+    chief_complaint: "Severe shoulder stiffness & loss of external rotation",
+    diagnosis: "Adhesive Capsulitis (Frozen Shoulder Left)",
+    pain_score: 8,
+    pain_location: "Left Glenohumeral Joint",
+    created_at: new Date().toISOString(),
+    patient: {
+      id: "p8",
+      first_name: "Kavita",
+      last_name: "Menon",
+      patient_code: "PD-2026-008",
+    },
+  },
+];
+
   async function loadAssessments() {
     setLoading(true);
 
@@ -54,12 +102,18 @@ export default function AssessmentsDirectoryPage() {
       `)
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error(error);
-    } else {
-      setAssessments((data ?? []) as unknown as Assessment[]);
-    }
+    const dbAssessments = (data ?? []) as unknown as Assessment[];
+    const combinedMap = new Map<string, Assessment>();
 
+    sampleDummyAssessments.forEach((a) => {
+      combinedMap.set(a.id, a);
+    });
+
+    dbAssessments.forEach((a) => {
+      combinedMap.set(a.id, a);
+    });
+
+    setAssessments(Array.from(combinedMap.values()));
     setLoading(false);
   }
 

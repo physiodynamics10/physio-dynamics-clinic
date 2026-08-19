@@ -1,13 +1,26 @@
+"use client";
+
+import Link from "next/link";
 import Image from "next/image";
 
 export default function PhysioLogo({
   collapsed = false,
+  href = "/dashboard",
 }: {
   collapsed?: boolean;
+  href?: string;
 }) {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.location.href = href;
+  };
+
   return (
-    <div
-      className={`flex items-center ${
+    <Link
+      href={href}
+      onClick={handleClick}
+      title="Go to Dashboard (Refresh)"
+      className={`inline-flex items-center transition-all hover:opacity-90 active:scale-95 cursor-pointer ${
         collapsed ? "justify-center" : "gap-3"
       }`}
     >
@@ -27,12 +40,8 @@ export default function PhysioLogo({
           <p className="truncate text-[15px] font-extrabold tracking-tight text-[#056B7D]">
             Physio Dynamics
           </p>
-
-          <p className="truncate text-[10px] font-bold uppercase tracking-[0.1em] text-[#0692AB]">
-            Physiotherapy & Rehabilitation
-          </p>
         </div>
       )}
-    </div>
+    </Link>
   );
 }

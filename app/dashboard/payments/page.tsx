@@ -35,6 +35,45 @@ export default function PaymentsPage() {
     loadPayments();
   }, []);
 
+const sampleDummyPayments: Payment[] = [
+  {
+    id: "pay-1",
+    amount: 4800,
+    payment_method: "UPI",
+    reference_number: "UPI-987654321001",
+    payment_date: new Date().toISOString().split("T")[0],
+    created_at: new Date().toISOString(),
+    patient: {
+      id: "p1",
+      first_name: "John",
+      last_name: "Mathew",
+      patient_code: "PD-2026-001",
+    },
+    invoice: {
+      id: "inv-1",
+      invoice_number: "INV-2026-001",
+    },
+  },
+  {
+    id: "pay-2",
+    amount: 3000,
+    payment_method: "Cash",
+    reference_number: "CASH-REC-002",
+    payment_date: new Date().toISOString().split("T")[0],
+    created_at: new Date().toISOString(),
+    patient: {
+      id: "p2",
+      first_name: "Deepak",
+      last_name: "Sharma",
+      patient_code: "PD-2026-002",
+    },
+    invoice: {
+      id: "inv-2",
+      invoice_number: "INV-2026-002",
+    },
+  },
+];
+
   async function loadPayments() {
     setLoading(true);
     const { data, error } = await supabase
@@ -59,11 +98,15 @@ export default function PaymentsPage() {
       `)
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error(error);
-    } else {
-      setPayments((data ?? []) as unknown as Payment[]);
-    }
+    const dbPayments = (data ?? []) as unknown as Payment[];
+    const combinedMap = new Map<string, Payment>();
+
+    sampleDummyPayments.forEach((p) => combinedMap.set(p.id, p));
+    dbPayments.forEach((p) => {
+      combinedMap.set(p.id, p);
+    });
+
+    setPayments(Array.from(combinedMap.values()));
     setLoading(false);
   }
 

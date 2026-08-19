@@ -39,6 +39,57 @@ export default function MasterTreatmentsDirectoryPage() {
     loadTreatmentSessions();
   }, []);
 
+const sampleDummySessions: TreatmentSession[] = [
+  {
+    id: "tx-1",
+    session_date: new Date().toISOString().split("T")[0],
+    pain_score: 5,
+    treatment_provided: "IFT 15 mins, Quadriceps isometric setting (3 sets x 10 reps), Ice pack 10 mins",
+    next_plan: "Progress to wall squats and single leg balance drills next session",
+    created_at: new Date().toISOString(),
+    patient: {
+      id: "p1",
+      first_name: "John",
+      last_name: "Mathew",
+      patient_code: "PD-2026-001",
+    },
+    condition: { id: "c1", name: "Patellofemoral Knee Pain" },
+    protocol: { id: "pr1", title: "Knee Joint Rehabilitation Protocol" },
+  },
+  {
+    id: "tx-2",
+    session_date: new Date().toISOString().split("T")[0],
+    pain_score: 6,
+    treatment_provided: "Lumbar mechanical traction 15kg for 30 mins, Core abdominal bracing",
+    next_plan: "Continue traction and add prone lumbo-sacral extension exercises",
+    created_at: new Date().toISOString(),
+    patient: {
+      id: "p2",
+      first_name: "Deepak",
+      last_name: "Sharma",
+      patient_code: "PD-2026-002",
+    },
+    condition: { id: "c2", name: "Lumbar Disc Strain" },
+    protocol: { id: "pr2", title: "Lumbar Spine Traction & Stabilization" },
+  },
+  {
+    id: "tx-3",
+    session_date: new Date().toISOString().split("T")[0],
+    pain_score: 7,
+    treatment_provided: "Glenohumeral joint mobilization Grade II, Wand external rotation, Ultrasound 5 mins",
+    next_plan: "Increase ROM stretch tolerance and add shoulder pulley exercises",
+    created_at: new Date().toISOString(),
+    patient: {
+      id: "p8",
+      first_name: "Kavita",
+      last_name: "Menon",
+      patient_code: "PD-2026-008",
+    },
+    condition: { id: "c3", name: "Frozen Shoulder (Capsulitis)" },
+    protocol: { id: "pr3", title: "Adhesive Capsulitis Mobilization" },
+  },
+];
+
   async function loadTreatmentSessions() {
     setLoading(true);
 
@@ -68,12 +119,13 @@ export default function MasterTreatmentsDirectoryPage() {
       `)
       .order("session_date", { ascending: false });
 
-    if (error) {
-      console.error(error);
-    } else {
-      setSessions((data ?? []) as unknown as TreatmentSession[]);
-    }
+    const dbSessions = (data ?? []) as unknown as TreatmentSession[];
+    const combinedMap = new Map<string, TreatmentSession>();
 
+    sampleDummySessions.forEach((s) => combinedMap.set(s.id, s));
+    dbSessions.forEach((s) => combinedMap.set(s.id, s));
+
+    setSessions(Array.from(combinedMap.values()));
     setLoading(false);
   }
 

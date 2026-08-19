@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Users,
   Calendar,
@@ -158,6 +159,24 @@ export default function PhysioDashboard({
         status: "In Treatment",
       },
     },
+    "10:30 AM": {
+      bed1: {
+        patient_name: "Amit Deshmukh",
+        treatment_type: "Planter Fasciitis Release",
+        therapist_name: "Dr. Alex Rivera",
+        duration: "1 Hour (10:30 - 11:30 AM)",
+        status: "Scheduled",
+      },
+    },
+    "11:30 AM": {
+      bed1: {
+        patient_name: "Vikram Malhotra",
+        treatment_type: "Tennis Elbow Physiotherapy",
+        therapist_name: "Dr. Sarah Chen",
+        duration: "1 Hour (11:30 AM - 12:30 PM)",
+        status: "Scheduled",
+      },
+    },
     "12:00 PM": {
       bed1: {
         patient_name: "Rohan Varma",
@@ -173,6 +192,33 @@ export default function PhysioDashboard({
         treatment_type: "Rotator Cuff Mobilization",
         therapist_name: "Dr. Sarah Chen",
         duration: "1 Hour (02:00 - 03:00 PM)",
+        status: "Scheduled",
+      },
+    },
+    "02:30 PM": {
+      bed2: {
+        patient_name: "Meera Nair",
+        treatment_type: "Post-ACL Reconstruction",
+        therapist_name: "Dr. Alex Rivera",
+        duration: "1 Hour (02:30 - 03:30 PM)",
+        status: "Scheduled",
+      },
+    },
+    "03:30 PM": {
+      bed1: {
+        patient_name: "Tariq Siddiqui",
+        treatment_type: "Hamstring Strain Rehab",
+        therapist_name: "Dr. Sarah Chen",
+        duration: "1 Hour (03:30 - 04:30 PM)",
+        status: "Scheduled",
+      },
+    },
+    "05:30 PM": {
+      bed1: {
+        patient_name: "Neha Gupta",
+        treatment_type: "Thoracic Kyphosis Correction",
+        therapist_name: "Dr. Alex Rivera",
+        duration: "1 Hour (05:30 - 06:30 PM)",
         status: "Scheduled",
       },
     },
@@ -241,6 +287,23 @@ export default function PhysioDashboard({
     setShowAllocateModal(true);
   };
 
+  function formatSlot1HourDuration(slotTime: string): string {
+    const match = slotTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!match) return `1 Hour (${slotTime})`;
+    let [, hStr, mStr, period] = match;
+    let h = parseInt(hStr, 10);
+    let isPm = period.toUpperCase() === "PM";
+    if (isPm && h < 12) h += 12;
+    if (!isPm && h === 12) h = 0;
+
+    let endH = (h + 1) % 24;
+    let endPeriod = endH >= 12 ? "PM" : "AM";
+    let end12H = endH % 12 || 12;
+    let formattedEndH = end12H.toString().padStart(2, "0");
+
+    return `1 Hour (${slotTime} - ${formattedEndH}:${mStr} ${endPeriod})`;
+  }
+
   const handleSaveAllocation = (e: React.FormEvent) => {
     e.preventDefault();
     if (!bookingForm.patient_name.trim()) return;
@@ -253,7 +316,7 @@ export default function PhysioDashboard({
           patient_name: bookingForm.patient_name,
           treatment_type: bookingForm.treatment_type,
           therapist_name: bookingForm.therapist_name,
-          duration: "1 Hour Session",
+          duration: formatSlot1HourDuration(bookingForm.slot_time),
           status: "Scheduled",
         },
       },
@@ -311,7 +374,15 @@ export default function PhysioDashboard({
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
 
-          <div className="flex items-center gap-2.5">
+          <a
+            href="/dashboard"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = "/dashboard";
+            }}
+            title="Go to Dashboard (Refresh)"
+            className="flex items-center gap-2.5 hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+          >
             <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-teal-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-teal-500/20 shrink-0">
               <Activity className="h-5 w-5 text-slate-950 stroke-[2.5]" />
             </div>
@@ -321,7 +392,7 @@ export default function PhysioDashboard({
                 Clinic Schedule
               </span>
             </div>
-          </div>
+          </a>
         </div>
 
         {/* Global Search */}
@@ -441,8 +512,8 @@ export default function PhysioDashboard({
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 space-y-6">
-          {/* Daily Schedule View */}
-          {activeTab === "schedule" && (
+          {/* Main Split Dashboard View (Left Side: Free/Booked Time Slots | Right Side: Bed Allocations Matrix) */}
+          {(activeTab === "dashboard" || activeTab === "schedule") && (
             <div className="space-y-6">
               {/* Header Banner */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-teal-950/40 via-slate-900 to-cyan-950/30 border border-teal-500/20 rounded-2xl p-5 sm:p-6 shadow-xl">
@@ -479,6 +550,15 @@ export default function PhysioDashboard({
                   </button>
                 </div>
               </div>
+
+              {selectedDate && new Date(`${selectedDate}T00:00:00`).getDay() === 0 && (
+                <div className="bg-rose-950/40 border border-rose-500/40 rounded-2xl p-4 flex items-center justify-between text-rose-300 text-sm font-bold shadow-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🚫</span>
+                    <span>Clinic Closed on Sundays — Physio Dynamics is closed on Sundays. Sessions are scheduled Monday through Saturday (08:00 AM – 07:00 PM).</span>
+                  </div>
+                </div>
+              )}
 
               {/* Capacity Metric Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -527,248 +607,193 @@ export default function PhysioDashboard({
                 </div>
               </div>
 
-              {/* Allocation Timeline */}
-              <div className="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-teal-400" />
-                    <span>Daily Schedule Sheet ({selectedDate})</span>
-                  </h3>
-                  <span className="text-xs text-slate-400">
-                    2 Parallel Patients Per Time Slot (1 Hr)
-                  </span>
-                </div>
+              {/* SPLIT DASHBOARD: Left Side = Free/Booked Time Slots | Right Side = Dual Bed Allocations */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* LEFT SIDE: Daily Time Slot List (Free Slots -> Click to Book) */}
+                <div className="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col">
+                  <div className="px-5 py-4 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-teal-400" />
+                        <span>Daily Time Slot Schedule ({selectedDate})</span>
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Tap any 🟢 FREE SLOT button to jump directly to appointment booking.
+                      </p>
+                    </div>
 
-                <div className="divide-y divide-slate-800/80">
-                  {timeSlots.map((slot) => {
-                    const slotData = allocations[slot] || {};
-                    const b1 = slotData.bed1;
-                    const b2 = slotData.bed2;
+                    <Link
+                      href="/dashboard/appointments/new"
+                      className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-950 font-bold text-xs shadow-md transition-all hover:scale-[1.02] shrink-0 flex items-center gap-1"
+                    >
+                      <Plus className="h-3.5 w-3.5 stroke-[3]" />
+                      <span>Book Slot</span>
+                    </Link>
+                  </div>
 
-                    // Render Lunch Break Row at 01:00 PM
-                    if (slot === "01:00 PM") {
+                  <div className="divide-y divide-slate-800/80 overflow-y-auto max-h-[750px]">
+                    {timeSlots.map((slot) => {
+                      if (slot === "01:00 PM") {
+                        return (
+                          <div
+                            key={slot}
+                            className="bg-amber-950/25 border-y border-amber-500/30 px-5 py-3.5 flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-mono font-bold text-xs border border-amber-500/30">
+                                01:00 PM – 02:00 PM
+                              </div>
+                              <div className="flex items-center gap-2 text-amber-300 font-bold text-xs">
+                                <Coffee className="h-4 w-4 text-amber-400" />
+                                <span>🍱 LUNCH BREAK — Clinic Closed for Sessions</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      if (slot === "01:30 PM") return null;
+
+                      const slotData = allocations[slot] || {};
+                      const b1 = slotData.bed1;
+                      const b2 = slotData.bed2;
+                      const hasPatient = b1 || b2;
+                      const bookedPatient = b1 || b2;
+
+                      // Convert 12h slot to 24h format for URL
+                      const timeParts = slot.split(" ");
+                      const time12 = timeParts[0].split(":");
+                      let h = parseInt(time12[0], 10);
+                      if (timeParts[1] === "PM" && h < 12) h += 12;
+                      if (timeParts[1] === "AM" && h === 12) h = 0;
+                      const time24 = `${h.toString().padStart(2, "0")}:${time12[1]}`;
+
                       return (
                         <div
                           key={slot}
-                          className="bg-amber-950/20 border-y border-amber-500/20 px-6 py-4 flex items-center justify-between"
+                          className={`p-4 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                            hasPatient
+                              ? "bg-slate-900/60 border-l-4 border-l-teal-500"
+                              : "bg-slate-950/40 border-l-4 border-l-emerald-500/60 hover:bg-slate-900/40"
+                          }`}
                         >
                           <div className="flex items-center gap-3">
-                            <div className="px-3 py-1 rounded-xl bg-amber-500/20 text-amber-300 font-mono font-bold text-sm border border-amber-500/30">
-                              01:00 PM – 02:00 PM
+                            <div className={`px-3 py-1.5 rounded-xl font-mono font-bold text-xs border shrink-0 ${
+                              hasPatient
+                                ? "bg-teal-500/15 text-teal-300 border-teal-500/30"
+                                : "bg-slate-800/80 text-slate-300 border-slate-700/80"
+                            }`}>
+                              {slot} (1 hr)
                             </div>
-                            <div className="flex items-center gap-2 text-amber-300 font-semibold text-sm">
-                              <Coffee className="h-4 w-4 text-amber-400" />
-                              <span>🍱 LUNCH BREAK — Clinic Closed for Sessions</span>
+
+                            <div>
+                              {hasPatient ? (
+                                <div>
+                                  <p className="text-sm font-extrabold text-white leading-tight">
+                                    {bookedPatient?.patient_name}
+                                  </p>
+                                  <p className="text-xs text-teal-400 font-medium mt-0.5">
+                                    {bookedPatient?.treatment_type} • {bookedPatient?.therapist_name}
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                                  <span className="text-xs font-extrabold text-emerald-400">
+                                    🟢 FREE SLOT AVAILABLE
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
-                          <span className="text-xs font-mono text-amber-400/70 hidden sm:inline">
-                            No Allocations During Lunch Hour
-                          </span>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {hasPatient ? (
+                              <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                                {bookedPatient?.status || "Scheduled"}
+                              </span>
+                            ) : (
+                              <Link
+                                href={`/dashboard/appointments/new?date=${selectedDate}&time=${time24}`}
+                                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-xs shadow-sm transition-all hover:scale-[1.03] flex items-center gap-1"
+                              >
+                                <Plus className="h-3.5 w-3.5 stroke-[3]" />
+                                <span>+ Book Appointment</span>
+                              </Link>
+                            )}
+                          </div>
                         </div>
                       );
-                    }
+                    })}
+                  </div>
+                </div>
 
-                    if (slot === "01:30 PM") {
-                      return null;
-                    }
+                {/* RIGHT SIDE: Dual Bed Allocations & Capacity Sheet */}
+                <div className="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col">
+                  <div className="px-5 py-4 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
+                    <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+                      <Bed className="h-5 w-5 text-cyan-400" />
+                      <span>Bed Slot Allocations</span>
+                    </h3>
+                    <span className="text-xs font-mono text-cyan-400/80">
+                      Dual Bed Capacity
+                    </span>
+                  </div>
 
-                    const bookedCount = (b1 ? 1 : 0) + (b2 ? 1 : 0);
+                  <div className="divide-y divide-slate-800/80 overflow-y-auto max-h-[750px] p-4 space-y-4">
+                    {timeSlots.map((slot) => {
+                      if (slot === "01:00 PM" || slot === "01:30 PM") return null;
 
-                    return (
-                      <div
-                        key={slot}
-                        className={`p-4 sm:p-5 transition-all space-y-3 ${
-                          bookedCount === 2
-                            ? "bg-slate-800/50 border-l-4 border-l-teal-500"
-                            : bookedCount === 1
-                            ? "bg-slate-800/30 border-l-4 border-l-cyan-500"
-                            : "hover:bg-slate-800/20 border-l-4 border-l-slate-700/40"
-                        }`}
-                      >
-                        {/* Slot Header */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="px-3 py-1 rounded-xl bg-slate-800 text-teal-400 font-mono font-bold text-sm border border-slate-700/60">
+                      const slotData = allocations[slot] || {};
+                      const b1 = slotData.bed1;
+                      const b2 = slotData.bed2;
+
+                      return (
+                        <div key={slot} className="bg-slate-950/50 border border-slate-800 rounded-xl p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="px-2 py-0.5 rounded bg-slate-800 text-teal-400 font-mono font-bold text-xs border border-slate-700">
                               {slot}
-                            </div>
-                            <span className="text-xs font-semibold text-slate-400">
-                              {slot === "12:00 PM"
-                                ? "Last Morning Slot (12:00 - 01:00 PM)"
-                                : `Capacity: ${bookedCount}/2 Patients Allocated`}
                             </span>
-                            {slot === "06:00 PM" && (
-                              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                                Last Session of Day (6-7 PM)
-                              </span>
-                            )}
+                            <span className="text-[11px] text-slate-400 font-medium">
+                              {(b1 ? 1 : 0) + (b2 ? 1 : 0)} / 2 Beds Allocated
+                            </span>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            {bookedCount === 2 ? (
-                              <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-teal-500/10 text-teal-400 border border-teal-500/20">
-                                Fully Booked (2/2)
-                              </span>
-                            ) : bookedCount === 1 ? (
-                              <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                                1 Bed Open (1/2)
-                              </span>
-                            ) : (
-                              <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-slate-800 text-slate-400 border border-slate-700">
-                                2 Beds Open
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Dual Patient Beds */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                          {/* Bed 1 / Patient A */}
-                          <div
-                            className={`p-3 rounded-xl border transition-all ${
-                              b1
-                                ? "bg-slate-900/80 border-slate-700/80"
-                                : "bg-slate-900/30 border-dashed border-slate-800 hover:border-slate-700"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs font-bold uppercase tracking-wider text-teal-400 flex items-center gap-1.5">
-                                <Bed className="h-3.5 w-3.5" />
-                                <span>Patient 1 (Bed A)</span>
-                              </span>
-                              {b1 && (
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    onClick={() => handleOpenAllocateModal(slot, "bed1")}
-                                    className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800"
-                                  >
-                                    <Edit3 className="h-3 w-3" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleRemoveAllocation(slot, "bed1")}
-                                    className="p-1 rounded text-red-400 hover:bg-red-500/20"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </button>
-                                </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {/* Bed 1 */}
+                            <div className={`p-2 rounded-lg border text-xs ${b1 ? "bg-slate-900 border-teal-500/40 text-teal-200" : "bg-slate-900/20 border-dashed border-slate-800 text-slate-500"}`}>
+                              <p className="font-bold text-[10px] uppercase tracking-wider text-teal-400">Bed Slot 1</p>
+                              {b1 ? (
+                                <p className="font-semibold text-white truncate mt-0.5">{b1.patient_name}</p>
+                              ) : (
+                                <button onClick={() => handleOpenAllocateModal(slot, "bed1")} className="mt-1 text-[11px] font-bold text-slate-400 hover:text-teal-400">
+                                  + Assign Bed 1
+                                </button>
                               )}
                             </div>
 
-                            {b1 ? (
-                              <div>
-                                <p className="font-bold text-white text-sm">{b1.patient_name}</p>
-                                <p className="text-xs text-slate-400 mt-0.5">
-                                  <span className="text-teal-300 font-medium">{b1.treatment_type}</span> • {b1.therapist_name}
-                                </p>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => handleOpenAllocateModal(slot, "bed1")}
-                                className="w-full py-2 text-xs font-semibold text-slate-400 hover:text-teal-300 flex items-center justify-center gap-1 transition-colors"
-                              >
-                                <Plus className="h-3.5 w-3.5" />
-                                <span>Allocate Patient 1 (Bed A)</span>
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Bed 2 / Patient B */}
-                          <div
-                            className={`p-3 rounded-xl border transition-all ${
-                              b2
-                                ? "bg-slate-900/80 border-slate-700/80"
-                                : "bg-slate-900/30 border-dashed border-slate-800 hover:border-slate-700"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-                                <Bed className="h-3.5 w-3.5" />
-                                <span>Patient 2 (Bed B)</span>
-                              </span>
-                              {b2 && (
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    onClick={() => handleOpenAllocateModal(slot, "bed2")}
-                                    className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800"
-                                  >
-                                    <Edit3 className="h-3 w-3" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleRemoveAllocation(slot, "bed2")}
-                                    className="p-1 rounded text-red-400 hover:bg-red-500/20"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </button>
-                                </div>
+                            {/* Bed 2 */}
+                            <div className={`p-2 rounded-lg border text-xs ${b2 ? "bg-slate-900 border-cyan-500/40 text-cyan-200" : "bg-slate-900/20 border-dashed border-slate-800 text-slate-500"}`}>
+                              <p className="font-bold text-[10px] uppercase tracking-wider text-cyan-400">Bed Slot 2</p>
+                              {b2 ? (
+                                <p className="font-semibold text-white truncate mt-0.5">{b2.patient_name}</p>
+                              ) : (
+                                <button onClick={() => handleOpenAllocateModal(slot, "bed2")} className="mt-1 text-[11px] font-bold text-slate-400 hover:text-cyan-400">
+                                  + Assign Bed 2
+                                </button>
                               )}
                             </div>
-
-                            {b2 ? (
-                              <div>
-                                <p className="font-bold text-white text-sm">{b2.patient_name}</p>
-                                <p className="text-xs text-slate-400 mt-0.5">
-                                  <span className="text-cyan-300 font-medium">{b2.treatment_type}</span> • {b2.therapist_name}
-                                </p>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => handleOpenAllocateModal(slot, "bed2")}
-                                className="w-full py-2 text-xs font-semibold text-slate-400 hover:text-cyan-300 flex items-center justify-center gap-1 transition-colors"
-                              >
-                                <Plus className="h-3.5 w-3.5" />
-                                <span>Allocate Patient 2 (Bed B)</span>
-                              </button>
-                            )}
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Standard Dashboard Overview */}
-          {activeTab === "dashboard" && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-teal-950/40 via-slate-900 to-indigo-950/30 border border-teal-500/20 rounded-2xl p-5 sm:p-6 shadow-xl">
-                <div>
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white">
-                    Good morning, {fullName} 👋
-                  </h1>
-                  <p className="text-slate-400 text-xs sm:text-sm mt-1">
-                    Physio Dynamics clinic schedule summary.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setActiveTab("schedule")}
-                  className="px-4 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-sm shadow-md"
-                >
-                  View Schedule Sheet
-                </button>
-              </div>
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
-                  <span className="text-xs font-semibold text-slate-400 uppercase">Max Daily Capacity</span>
-                  <p className="text-3xl font-extrabold text-white mt-2">36 Patients</p>
-                </div>
-                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
-                  <span className="text-xs font-semibold text-slate-400 uppercase">Booked Patients</span>
-                  <p className="text-3xl font-extrabold text-teal-400 mt-2">{totalBookedPatients}</p>
-                </div>
-                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
-                  <span className="text-xs font-semibold text-slate-400 uppercase">Free Beds Open</span>
-                  <p className="text-3xl font-extrabold text-cyan-400 mt-2">{totalFreeBeds}</p>
-                </div>
-                <div className="bg-slate-900/80 border border-amber-500/30 rounded-2xl p-5 bg-amber-500/5">
-                  <span className="text-xs font-semibold text-amber-400 uppercase">Lunch Break</span>
-                  <p className="text-xl font-bold text-white mt-2">1:00 PM – 2:00 PM</p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Patients Directory View */}
           {activeTab === "patients" && (
